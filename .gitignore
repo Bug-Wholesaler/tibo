@@ -1,0 +1,25 @@
+node_modules/
+ai-config.json
+*ai-config*.json
+.env
+.env.*
+*.key
+*.pem
+*.secret
+.tibo/
+.agents/
+dist/
+*.lnk
+*.log
+.DS_Store
+Thumbs.db
+
+# 内部运营总纲与AI规则（仅保留在本地根目录，绝不推送至公开 GitHub）
+/AGENTS.md
+/GEMINI.md
+/.cursorrules
+/log.md
+/README.md
+
+# 暂未发布的后续产品（待正式发布日再解除注释推送）
+/day2/
