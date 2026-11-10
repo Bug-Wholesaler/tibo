@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Yttrium的28天护茶监控台 | 28天AI手搓打卡</title>
-  <!-- 引入博主维护的官方数据配置 -->
+  <!-- 引入打卡数据配置 -->
   <script src="./data.js"></script>
   <style>
     :root {
@@ -784,17 +784,16 @@
 </head>
 <body>
 
-  <!-- 博主本地截图与演示工具栏（仅在本地打开或带 ?admin=1 时可见，公开部署后访客不可见） -->
+  <!-- 本地调试工具栏 -->
   <div class="author-toolbar" id="authorToolbar">
     <div class="toolbar-group">
-      <span class="author-badge">🛠️ 博主截图与预览台</span>
-      <span style="color: var(--text-muted);">（访客访问线上网址时自动隐藏本栏）</span>
+      <span class="author-badge">🛠️ 本地调试面板</span>
     </div>
     <div class="toolbar-group">
-      <button class="btn-tool" id="btnLiveDemo" onclick="toggleLiveDemoMode()">🎬 Live图点亮演示: 关</button>
-      <button class="btn-tool" onclick="previewWinnerModal()">🧋 预览断更中奖图弹窗</button>
+      <button class="btn-tool" id="btnLiveDemo" onclick="toggleLiveDemoMode()">🎬 点亮动效测试: 关</button>
+      <button class="btn-tool" onclick="previewWinnerModal()">🧋 弹窗测试</button>
       <button class="btn-tool" id="btnRatio" onclick="cycleRatio()">📐 比例: 自适应</button>
-      <button class="btn-tool" onclick="toggleCleanMode()">📸 纯净截图模式</button>
+      <button class="btn-tool" onclick="toggleCleanMode()">📸 纯净视图</button>
     </div>
   </div>
 

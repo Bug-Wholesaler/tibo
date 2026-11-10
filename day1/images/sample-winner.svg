@@ -1,10 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="600" height="360" viewBox="0 0 600 360">
   <rect width="600" height="360" rx="16" fill="#FFFBEB"/>
   <rect x="8" y="8" width="584" height="344" rx="12" fill="none" stroke="#F59E0B" stroke-width="2" stroke-dasharray="6 6"/>
-  <text x="300" y="110" font-family="sans-serif" font-size="42" text-anchor="middle">🧋</text>
-  <text x="300" y="165" font-family="sans-serif" font-size="22" font-weight="bold" fill="#92400E" text-anchor="middle">断更奶茶锦鲤 · 评论区抽中用户截图位</text>
-  <text x="300" y="205" font-family="sans-serif" font-size="14" fill="#B45309" text-anchor="middle">当某天触发断更 Reset 时，将抽中的评论区用户截图放入 day1/images/</text>
-  <text x="300" y="235" font-family="monospace" font-size="13" fill="#D97706" text-anchor="middle">并在 data.js 中填入 winnerImage: "./images/xxx.png"</text>
-  <rect x="180" y="265" width="240" height="36" rx="18" fill="#FEF3C7"/>
-  <text x="300" y="288" font-family="sans-serif" font-size="13" font-weight="bold" fill="#D97706" text-anchor="middle">私信发放电子奶茶券 · 防开盒脱敏</text>
+  <text x="300" y="115" font-family="sans-serif" font-size="44" text-anchor="middle">🧋</text>
+  <text x="300" y="170" font-family="sans-serif" font-size="22" font-weight="bold" fill="#92400E" text-anchor="middle">断更奶茶锦鲤 · 评论区开奖截图位</text>
+  <text x="300" y="210" font-family="sans-serif" font-size="14" fill="#B45309" text-anchor="middle">目前保持 0 断更记录，暂未触发破产请客</text>
+  <rect x="190" y="245" width="220" height="36" rx="18" fill="#FEF3C7"/>
+  <text x="300" y="268" font-family="sans-serif" font-size="13" font-weight="bold" fill="#D97706" text-anchor="middle">断更当日在此公示中奖读者截图</text>
 </svg>

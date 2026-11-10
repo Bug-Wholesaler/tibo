@@ -1,20 +1,17 @@
 /**
- * Yttrium的28天护茶监控台 — 官方数据配置文件 (data.js)
+ * 28天护茶监控台 — 打卡进度与作品链接配置 (data.js)
  * 
- * 说明：
- * 1. 本文件由博主（Yttrium）单方维护，访客在网页上只能查看和点击跳转，无法篡改状态。
- * 2. 网页会自动读取真实北京时间（UTC+8），将 Day 01 ~ Day 28 与真实日历日期对齐。
- * 3. 状态字段 status 取值说明：
- *    - "done"  : 🚀 已交作业（点亮薄荷绿，访客点击可跳转 GitHub 或下载作品）
- *    - "reset" : 🧋 触发断更（点亮奶茶暖橙，访客点击可查看抽到的评论区锦鲤用户图片）
- *    - "auto"  : 🕒 自动对齐时间（未来日期显示「待解锁」，当日未更新时显示「今日手搓中」）
+ * 状态字段 status 说明：
+ * - "done"  : 🚀 已交作业（点亮绿色，点击可跳转对应 GitHub 源码或下载链接）
+ * - "reset" : 🧋 触发断更（点亮橙色，点击可查看当天抽中的奶茶锦鲤截图）
+ * - "auto"  : 🕒 自动对齐时间（未到日期显示待解锁，当天未更新时显示手搓中）
  */
 
 window.YTTRIUM_CONFIG = {
-  // 挑战启动第一天日期（北京时间 YYYY-MM-DD）
+  // 挑战启动第一天日期（YYYY-MM-DD）
   startDate: "2026-11-10",
 
-  // 账号与站点基础信息（严格遵循防开盒脱敏规范）
+  // 页面头部信息
   profile: {
     title: "Yttrium的28天护茶监控台",
     subtitle: "THU某天坑牛马 · 28天AI手搓军令状",
@@ -22,31 +19,20 @@ window.YTTRIUM_CONFIG = {
     githubHome: "https://github.com/Bug-Wholesaler/yttrium"
   },
 
-  // 28天排期与交付数据（每天更新这里即可）
+  // 28天打卡记录与作品传送门
   days: [
     {
       day: 1,
-      status: "done", // "done" | "reset" | "auto"
+      status: "done",
       title: "Day 01：手搓本护茶监控台网站，卡Bug保住第一杯奶茶",
       desc: "纯前端清爽亮色监控面板，对接真实日历时间，支持作品跳转与断更锦鲤公示。",
-      githubUrl: "https://github.com/Bug-Wholesaler/yttrium/tree/main/day1", // GitHub 仓库地址
-      downloadUrl: "./index.html",        // 作品下载链接或在线体验地址
+      githubUrl: "https://github.com/Bug-Wholesaler/yttrium/tree/main/day1",
+      downloadUrl: "./index.html",
       winnerName: "",
       winnerImage: ""
     },
-    {
-      day: 2,
-      status: "auto",
-      title: "Day 02：待解锁更新",
-      desc: "欢迎在小红书评论区留下离谱痛点蹲奶茶",
-      githubUrl: "",
-      downloadUrl: "",
-      winnerName: "",
-      winnerImage: ""
-    },
-    // Day 03 ~ Day 28 默认自动根据真实时间对齐锁定状态
-    // 如果某天断更了，只需把对应 day 的 status 改为 "reset"，并放入中奖截图路径（如 "./images/day3-winner.png"）
-    { day: 3,  status: "auto", title: "Day 03：待从评论区奇葩痛点池解锁", desc: "欢迎在小红书评论区留下离谱痛点蹲奶茶", githubUrl: "", downloadUrl: "", winnerName: "", winnerImage: "" },
+    { day: 2,  status: "auto", title: "Day 02：待解锁更新", desc: "欢迎在评论区留下离谱痛点蹲奶茶", githubUrl: "", downloadUrl: "", winnerName: "", winnerImage: "" },
+    { day: 3,  status: "auto", title: "Day 03：待解锁更新", desc: "欢迎在评论区留下离谱痛点蹲奶茶", githubUrl: "", downloadUrl: "", winnerName: "", winnerImage: "" },
     { day: 4,  status: "auto", title: "Day 04：待解锁更新", desc: "", githubUrl: "", downloadUrl: "", winnerName: "", winnerImage: "" },
     { day: 5,  status: "auto", title: "Day 05：待解锁更新", desc: "", githubUrl: "", downloadUrl: "", winnerName: "", winnerImage: "" },
     { day: 6,  status: "auto", title: "Day 06：待解锁更新", desc: "", githubUrl: "", downloadUrl: "", winnerName: "", winnerImage: "" },
