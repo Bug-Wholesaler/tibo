@@ -1,0 +1,3691 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>YPod</title>
+  <style>
+    :root {
+      --cyan: #38bdf8;
+      --emerald: #10b981;
+      --violet: #a855f7;
+      --amber: #f59e0b;
+      --crimson: #ef4444;
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      background: transparent;
+      overflow-x: hidden;
+      overflow-y: auto;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      color: var(--text-primary);
+    }
+
+    .pod-stage {
+      width: 100%;
+      padding: 8px 10px 12px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .floating-pod {
+      position: relative;
+      width: 100%;
+      background: radial-gradient(120% 140% at 15% 10%, rgba(30, 41, 59, 0.97) 0%, rgba(9, 13, 24, 0.98) 75%);
+      border: 1.2px solid rgba(56, 189, 248, 0.35);
+      border-radius: 26px;
+      box-shadow:
+        0 10px 26px rgba(0, 0, 0, 0.65),
+        0 0 18px rgba(56, 189, 248, 0.14),
+        inset 0 1px 1px rgba(255, 255, 255, 0.14);
+      transition: border-color 0.25s ease, box-shadow 0.25s ease, border-radius 0.25s ease;
+      overflow: hidden;
+    }
+
+    body.mode-capsule .floating-pod {
+      border-radius: 42px;
+    }
+
+    .floating-pod.state-CODING {
+      border-color: rgba(16, 185, 129, 0.5);
+      box-shadow: 0 10px 26px rgba(0, 0, 0, 0.65), 0 0 22px rgba(16, 185, 129, 0.22);
+    }
+    .floating-pod.state-THINKING {
+      border-color: rgba(168, 85, 247, 0.5);
+      box-shadow: 0 10px 26px rgba(0, 0, 0, 0.65), 0 0 22px rgba(168, 85, 247, 0.22);
+    }
+    .floating-pod.state-LOOP_WARN {
+      border-color: rgba(245, 158, 11, 0.7);
+      box-shadow: 0 10px 26px rgba(0, 0, 0, 0.65), 0 0 24px rgba(245, 158, 11, 0.3);
+    }
+    .floating-pod.state-DANGER {
+      border-color: rgba(239, 68, 68, 0.9);
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.75), 0 0 30px rgba(239, 68, 68, 0.55);
+    }
+
+    /* ==================== TOP CAPSULE BAR (Always Visible) ==================== */
+    .capsule-bar {
+      display: flex;
+      align-items: center;
+      height: 94px;
+      padding: 0 14px 0 12px;
+      gap: 11px;
+      -webkit-app-region: drag;
+      cursor: grab;
+    }
+
+    .orb-wrap {
+      position: relative;
+      width: 52px;
+      height: 52px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      -webkit-app-region: no-drag;
+      cursor: pointer;
+    }
+    #orbCanvas {
+      width: 52px;
+      height: 52px;
+      display: block;
+    }
+
+    .capsule-center {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 4px;
+    }
+
+    .pipeline-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+      overflow: hidden;
+      -webkit-app-region: no-drag;
+    }
+
+    /* Clear Agent + Project Pill */
+    .agent-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 2.5px 9px;
+      border-radius: 999px;
+      font-size: 10.5px;
+      font-weight: 800;
+      background: rgba(56, 189, 248, 0.16);
+      color: var(--cyan);
+      border: 1px solid rgba(56, 189, 248, 0.42);
+      cursor: pointer;
+      flex: 0 1 auto;
+      min-width: 0;
+      max-width: 170px;
+      transition: all 0.15s;
+    }
+    .agent-pill:hover {
+      background: rgba(56, 189, 248, 0.28);
+    }
+    .agent-pill.codex {
+      background: rgba(16, 185, 129, 0.16);
+      color: #34d399;
+      border-color: rgba(16, 185, 129, 0.42);
+    }
+    .agent-pill.claude {
+      background: rgba(245, 158, 11, 0.18);
+      color: #fbbf24;
+      border-color: rgba(245, 158, 11, 0.45);
+    }
+    .agent-pill.cursor {
+      background: rgba(168, 85, 247, 0.18);
+      color: #d8b4fe;
+      border-color: rgba(168, 85, 247, 0.45);
+    }
+    .agent-live-dot {
+      width: 6.5px;
+      height: 6.5px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 6px #10b981;
+      flex-shrink: 0;
+    }
+    .agent-live-dot.idle {
+      background: #64748b;
+      box-shadow: none;
+    }
+    .agent-pill-label {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .capsule-token-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 7px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+      font-family: Consolas, monospace;
+      background: rgba(168, 85, 247, 0.16);
+      color: #d8b4fe;
+      border: 1px solid rgba(168, 85, 247, 0.34);
+      cursor: pointer;
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+    .capsule-token-pill:hover {
+      background: rgba(168, 85, 247, 0.28);
+    }
+
+    .stage-track {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      flex: none;
+      min-width: 0;
+      overflow: hidden;
+    }
+    .stage-node {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      font-size: 9.5px;
+      font-weight: 600;
+      color: rgba(148, 163, 184, 0.45);
+      white-space: nowrap;
+    }
+    .stage-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: rgba(148, 163, 184, 0.3);
+    }
+    .stage-line {
+      width: 5px;
+      height: 1.5px;
+      background: rgba(148, 163, 184, 0.2);
+    }
+    .stage-node.done {
+      color: rgba(226, 232, 240, 0.82);
+    }
+    .stage-node.done .stage-dot {
+      background: var(--cyan);
+      box-shadow: 0 0 5px var(--cyan);
+    }
+    .stage-node.active {
+      color: #ffffff;
+      font-weight: 800;
+    }
+    .stage-node.active .stage-dot {
+      width: 7px;
+      height: 7px;
+      background: #38bdf8;
+      box-shadow: 0 0 9px #38bdf8;
+    }
+    @media (max-width: 410px) {
+      .stage-node > span:last-child { display: none; }
+      .stage-line { flex: 1; }
+    }
+
+    .live-subtitle {
+      font-size: 13px;
+      font-weight: 700;
+      color: #f8fafc;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .capsule-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      -webkit-app-region: no-drag;
+      flex-shrink: 0;
+    }
+
+    .mini-ring-wrap {
+      position: relative;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    .mini-ring-val {
+      position: absolute;
+      font-size: 9px;
+      font-weight: 800;
+      color: #e2e8f0;
+    }
+
+    .pod-toolbar {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      width: 114px;
+    }
+
+    .pod-win-row {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      width: 100%;
+    }
+
+    .ctrl-chip {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      height: 24px;
+      padding: 0 7px;
+      border-radius: 7px;
+      border: 1px solid rgba(148, 163, 184, 0.22);
+      background: rgba(30, 41, 59, 0.65);
+      color: #cbd5e1;
+      font-size: 10px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+    .ctrl-chip:hover {
+      background: rgba(56, 189, 248, 0.18);
+      color: #ffffff;
+      border-color: rgba(56, 189, 248, 0.45);
+    }
+    .ctrl-chip.edge-chip {
+      flex: 1;
+      min-width: 0;
+    }
+    .ctrl-chip.edge-chip.active {
+      background: rgba(56, 189, 248, 0.2);
+      color: #7dd3fc;
+      border-color: rgba(56, 189, 248, 0.62);
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.22);
+    }
+    .ctrl-svg {
+      width: 12px;
+      height: 12px;
+      flex-shrink: 0;
+      opacity: 0.9;
+    }
+
+    .ctrl-chip.theme-chip {
+      width: 100%;
+      height: 22px;
+      justify-content: space-between;
+      padding: 0 7px;
+      font-size: 9.5px;
+      color: #94a3b8;
+    }
+    .ctrl-chip.theme-chip b {
+      color: #e2e8f0;
+      font-weight: 700;
+    }
+    .ctrl-chip.theme-chip.open {
+      background: rgba(56, 189, 248, 0.16);
+      border-color: rgba(56, 189, 248, 0.48);
+      color: #e2e8f0;
+    }
+    .theme-chip-left {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      min-width: 0;
+    }
+    .theme-chip-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #38bdf8;
+      box-shadow: 0 0 6px #38bdf8;
+      flex-shrink: 0;
+    }
+    .theme-chip-caret {
+      font-size: 8.5px;
+      opacity: 0.75;
+    }
+
+    .pod-ctrl-btn {
+      width: 24px;
+      height: 24px;
+      border-radius: 7px;
+      border: 1px solid rgba(148, 163, 184, 0.22);
+      background: rgba(30, 41, 59, 0.65);
+      color: #cbd5e1;
+      font-size: 11px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: all 0.15s;
+    }
+    .pod-ctrl-btn:hover {
+      background: rgba(56, 189, 248, 0.22);
+      color: #fff;
+      border-color: rgba(56, 189, 248, 0.45);
+    }
+    .pod-ctrl-btn.close:hover {
+      background: rgba(239, 68, 68, 0.75);
+      border-color: var(--crimson);
+    }
+
+    /* ==================== THEME QUICK-PICKER DRAWER ==================== */
+    .theme-picker-drawer {
+      display: none;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      padding: 8px 14px 9px;
+      background: rgba(9, 13, 24, 0.96);
+      border-top: 1px solid rgba(56, 189, 248, 0.22);
+      -webkit-app-region: no-drag;
+    }
+    .theme-picker-drawer.show {
+      display: grid;
+    }
+    .theme-swatch-item {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      padding: 5px 6px;
+      border-radius: 8px;
+      background: rgba(30, 41, 59, 0.55);
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      color: #cbd5e1;
+      font-size: 10px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .theme-swatch-item:hover {
+      background: rgba(56, 189, 248, 0.16);
+      border-color: rgba(56, 189, 248, 0.4);
+      color: #ffffff;
+    }
+    .theme-swatch-item.active {
+      background: rgba(56, 189, 248, 0.22);
+      border-color: rgba(56, 189, 248, 0.65);
+      color: #ffffff;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.22);
+    }
+
+    /* ==================== AGENT SESSION PICKER DRAWER ==================== */
+    .session-picker {
+      display: none;
+      flex-direction: column;
+      gap: 6px;
+      padding: 10px 14px 12px;
+      background: rgba(9, 13, 24, 0.98);
+      border-top: 1px solid rgba(56, 189, 248, 0.25);
+      -webkit-app-region: no-drag;
+    }
+    .session-picker.show {
+      display: flex;
+    }
+    .picker-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11px;
+      font-weight: 700;
+      color: #94a3b8;
+      margin-bottom: 2px;
+    }
+    .session-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 8px 10px;
+      border-radius: 12px;
+      background: rgba(30, 41, 59, 0.6);
+      border: 1px solid rgba(148, 163, 184, 0.15);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .session-item:hover {
+      background: rgba(51, 65, 85, 0.75);
+      border-color: rgba(56, 189, 248, 0.4);
+    }
+    .session-item.active {
+      background: rgba(56, 189, 248, 0.14);
+      border-color: rgba(56, 189, 248, 0.6);
+    }
+    .session-item-left {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      min-width: 0;
+      flex: 1;
+    }
+    .session-top-tags {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 10.5px;
+    }
+    .plat-tag {
+      padding: 1px 6px;
+      border-radius: 5px;
+      font-weight: 800;
+      font-size: 9.5px;
+    }
+    .plat-tag.agy {
+      background: rgba(56, 189, 248, 0.18);
+      color: #38bdf8;
+    }
+    .plat-tag.codex {
+      background: rgba(16, 185, 129, 0.18);
+      color: #34d399;
+    }
+    .plat-tag.claude {
+      background: rgba(245, 158, 11, 0.2);
+      color: #fbbf24;
+    }
+    .plat-tag.cursor {
+      background: rgba(168, 85, 247, 0.2);
+      color: #d8b4fe;
+    }
+    .proj-folder-tag {
+      font-weight: 700;
+      color: #f8fafc;
+    }
+    .session-topic-line {
+      font-size: 11.5px;
+      color: #cbd5e1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .session-item-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 3px;
+      flex-shrink: 0;
+      font-size: 10px;
+    }
+
+    /* ==================== COCKPIT BODY & PAGE TABS ==================== */
+    .cockpit-body {
+      display: flex;
+      flex-direction: column;
+      padding: 0 14px 12px;
+      gap: 10px;
+      border-top: 1px solid rgba(148, 163, 184, 0.12);
+      -webkit-app-region: no-drag;
+    }
+    body.mode-capsule .cockpit-body {
+      display: none !important;
+    }
+
+    /* Current Supervised Target Identity Banner */
+    .target-identity-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-top: 8px;
+      padding: 5px 10px;
+      border-radius: 10px;
+      background: rgba(15, 23, 42, 0.65);
+      border: 1px solid rgba(148, 163, 184, 0.14);
+      font-size: 11px;
+      cursor: pointer;
+    }
+    .target-identity-bar:hover {
+      border-color: rgba(56, 189, 248, 0.4);
+    }
+
+    /* Segmented Quick-Switch Navigation Bar */
+    .nav-tabs {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 5px;
+      background: rgba(15, 23, 42, 0.75);
+      padding: 4px;
+      border-radius: 13px;
+      border: 1px solid rgba(148, 163, 184, 0.14);
+    }
+    .nav-tab {
+      padding: 5px 6px;
+      border-radius: 9px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.16s;
+    }
+    .nav-tab:hover {
+      color: #e2e8f0;
+    }
+    .nav-tab.active {
+      background: rgba(56, 189, 248, 0.2);
+      color: #38bdf8;
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      box-shadow: 0 2px 8px rgba(56, 189, 248, 0.15);
+    }
+
+    .tab-page {
+      display: none;
+      flex-direction: column;
+      gap: 9px;
+    }
+    .tab-page.active {
+      display: flex;
+    }
+
+    .intercept-pod-alert {
+      display: none;
+      background: linear-gradient(135deg, rgba(153, 27, 27, 0.94), rgba(69, 10, 10, 0.97));
+      border: 1px solid #f87171;
+      border-radius: 14px;
+      padding: 9px 12px;
+      gap: 6px;
+      flex-direction: column;
+      box-shadow: 0 6px 20px rgba(239, 68, 68, 0.35);
+    }
+    .intercept-pod-alert.show {
+      display: flex;
+    }
+    .intercept-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11.5px;
+      font-weight: 800;
+      color: #fecaca;
+    }
+    .intercept-cmd-pill {
+      font-family: Consolas, monospace;
+      font-size: 10.5px;
+      background: rgba(0, 0, 0, 0.45);
+      color: #fca5a5;
+      padding: 5px 8px;
+      border-radius: 8px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .intercept-btn-row {
+      display: flex;
+      gap: 8px;
+    }
+    .pod-action-btn {
+      flex: 1;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+    }
+    .pod-action-btn.deny {
+      background: #ef4444;
+      color: #fff;
+    }
+    .pod-action-btn.allow {
+      background: rgba(255, 255, 255, 0.14);
+      color: #f1f5f9;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+    }
+
+    /* ==================== PAGE 1: OVERVIEW HUD ==================== */
+    .gauges-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+    .gauge-tile {
+      min-width: 0;
+      background: rgba(15, 23, 42, 0.68);
+      border: 1px solid rgba(148, 163, 184, 0.15);
+      border-radius: 14px;
+      padding: 9px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .gauge-label {
+      font-size: 10px;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .gauge-value {
+      font-size: 15px;
+      font-weight: 800;
+    }
+    .gauge-bar-track {
+      width: 100%;
+      height: 4px;
+      background: rgba(148, 163, 184, 0.15);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .gauge-bar-fill {
+      height: 100%;
+      border-radius: 999px;
+      transition: width 0.35s ease;
+    }
+    .gauge-sub {
+      font-size: 10px;
+      color: #cbd5e1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .goal-details.expanded .gauge-sub {
+      user-select: text;
+      white-space: pre-wrap;
+      overflow: visible;
+      overflow-wrap: anywhere;
+      line-height: 1.5;
+    }
+    .goal-details.expanded {
+      max-height: 150px;
+      overflow-y: auto;
+      user-select: text;
+    }
+    .expand-link {
+      align-self: flex-start;
+      border: 0;
+      background: transparent;
+      color: #7dd3fc;
+      font: inherit;
+      font-size: 10px;
+      cursor: pointer;
+      padding: 2px 0;
+    }
+    .expand-link:focus-visible, .step-toggle:focus-visible {
+      outline: 2px solid #7dd3fc;
+      outline-offset: 2px;
+    }
+
+    .ai-strip {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      background: linear-gradient(90deg, rgba(56, 189, 248, 0.12), rgba(168, 85, 247, 0.12));
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      border-radius: 13px;
+      padding: 8px 10px;
+      font-size: 11px;
+      line-height: 1.4;
+      color: #e2e8f0;
+    }
+    .ai-strip-text {
+      flex: 1;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    /* ==================== PAGE 2: TOKEN & THROUGHPUT ==================== */
+    .token-hero-card {
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.85), rgba(46, 16, 101, 0.45));
+      border: 1px solid rgba(168, 85, 247, 0.32);
+      border-radius: 14px;
+      padding: 10px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+    }
+    .token-speed-big {
+      font-family: Consolas, monospace;
+      font-size: 22px;
+      font-weight: 800;
+      color: #f8fafc;
+    }
+    .token-speed-big small {
+      font-size: 11px;
+      color: #c084fc;
+    }
+    .token-spark-wrap {
+      flex: 1;
+      height: 46px;
+    }
+    #tokenSparkSvg {
+      width: 100%;
+      height: 46px;
+      overflow: visible;
+    }
+
+    .token-grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 7px;
+    }
+    .tok-stat-box {
+      background: rgba(15, 23, 42, 0.68);
+      border: 1px solid rgba(148, 163, 184, 0.15);
+      border-radius: 12px;
+      padding: 7px 9px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .tok-stat-label {
+      font-size: 9.5px;
+      color: var(--text-secondary);
+    }
+    .tok-stat-val {
+      font-family: Consolas, monospace;
+      font-size: 13.5px;
+      font-weight: 800;
+      color: #f1f5f9;
+    }
+
+    /* ==================== PAGE 3: FILE RADAR & RECENT STEPS ==================== */
+    .radar-box {
+      background: rgba(15, 23, 42, 0.68);
+      border: 1px solid rgba(148, 163, 184, 0.15);
+      border-radius: 14px;
+      padding: 9px 11px;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+    .radar-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 10.5px;
+      color: var(--text-secondary);
+    }
+    .legend-group {
+      display: flex;
+      gap: 8px;
+      font-size: 9.5px;
+    }
+    .legend-dot {
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      margin-right: 3px;
+    }
+    .file-bubbles {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      min-height: 28px;
+      align-items: center;
+    }
+    .file-bubble {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-size: 10.5px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: transform 0.14s ease, box-shadow 0.14s ease, filter 0.14s ease;
+    }
+    .file-bubble:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.15);
+      box-shadow: 0 3px 10px rgba(15, 23, 42, 0.55);
+    }
+    .file-bubble:active {
+      transform: translateY(0);
+    }
+    .file-bubble.mode-READ {
+      background: rgba(56, 189, 248, 0.13);
+      color: #7dd3fc;
+      border: 1px solid rgba(56, 189, 248, 0.3);
+    }
+    .file-bubble.mode-WRITE {
+      background: rgba(16, 185, 129, 0.16);
+      color: #6ee7b7;
+      border: 1px solid rgba(16, 185, 129, 0.4);
+    }
+    .file-bubble.mode-DELETE {
+      background: rgba(239, 68, 68, 0.22);
+      color: #fca5a5;
+      border: 1px solid rgba(239, 68, 68, 0.5);
+    }
+    .bubble-count {
+      font-size: 9px;
+      opacity: 0.8;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 0 4px;
+      border-radius: 999px;
+    }
+    .radar-status-toast {
+      font-size: 9.5px;
+      color: #34d399;
+      font-weight: 600;
+      margin-left: 6px;
+    }
+
+    .diff-stat-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 1px 6px;
+      border-radius: 6px;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      font-family: "JetBrains Mono", Consolas, monospace;
+      font-size: 9.5px;
+      font-weight: 700;
+      margin-right: 4px;
+    }
+    .diff-stat-pill .add { color: #34d399; }
+    .diff-stat-pill .del { color: #f87171; }
+
+    .mini-diff-card {
+      margin-bottom: 8px;
+      border-radius: 8px;
+      border: 1px solid rgba(148, 163, 184, 0.22);
+      background: rgba(2, 6, 23, 0.88);
+      overflow: hidden;
+    }
+    .mini-diff-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      padding: 5px 8px;
+      background: rgba(15, 23, 42, 0.92);
+      border-bottom: 1px solid rgba(148, 163, 184, 0.16);
+      font-size: 10px;
+    }
+    .mini-diff-file {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      color: #e2e8f0;
+      font-weight: 700;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .mini-diff-actions {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      flex-shrink: 0;
+    }
+    .mini-diff-btn {
+      padding: 2px 7px;
+      border-radius: 5px;
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      background: rgba(56, 189, 248, 0.12);
+      color: #7dd3fc;
+      font-size: 9.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.14s;
+    }
+    .mini-diff-btn:hover {
+      background: rgba(56, 189, 248, 0.26);
+    }
+    .mini-diff-body {
+      max-height: 155px;
+      overflow: auto;
+      font-family: "JetBrains Mono", Consolas, "Courier New", monospace;
+      font-size: 10px;
+      line-height: 1.45;
+      padding: 3px 0;
+    }
+    .diff-line {
+      display: flex;
+      padding: 1px 8px;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+    .diff-line .diff-sign {
+      width: 14px;
+      flex-shrink: 0;
+      user-select: none;
+      opacity: 0.85;
+      font-weight: 700;
+    }
+    .diff-line.add {
+      background: rgba(16, 185, 129, 0.16);
+      color: #6ee7b7;
+      border-left: 2.5px solid #10b981;
+    }
+    .diff-line.del {
+      background: rgba(239, 68, 68, 0.16);
+      color: #fca5a5;
+      border-left: 2.5px solid #ef4444;
+    }
+    .diff-line.meta {
+      background: rgba(56, 189, 248, 0.1);
+      color: #7dd3fc;
+      font-style: italic;
+    }
+    .diff-line.ctx {
+      color: #94a3b8;
+    }
+
+    /* Cross-Session File Conflict Alert */
+    .conflict-alert-card {
+      display: none;
+      align-items: center;
+      gap: 7px;
+      padding: 6px 10px;
+      margin-bottom: 7px;
+      border-radius: 9px;
+      background: rgba(225, 29, 72, 0.18);
+      border: 1px solid rgba(244, 63, 94, 0.55);
+      color: #fecdd3;
+      font-size: 10.5px;
+      font-weight: 600;
+      animation: alertPulse 1.8s ease-in-out infinite;
+    }
+    .conflict-alert-card.show {
+      display: flex;
+    }
+    @keyframes alertPulse {
+      0%, 100% { border-color: rgba(244, 63, 94, 0.55); }
+      50% { border-color: rgba(244, 63, 94, 0.95); box-shadow: 0 0 10px rgba(244, 63, 94, 0.4); }
+    }
+
+    /* Timeline Time-Travel Scrub Bar */
+    .timeline-scrub-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      background: rgba(15, 23, 42, 0.65);
+      border: 1px solid rgba(148, 163, 184, 0.16);
+      border-radius: 9px;
+      padding: 4px 8px;
+      margin-bottom: 7px;
+      font-size: 10px;
+      color: #cbd5e1;
+    }
+    .timeline-scrub-input {
+      flex: 1;
+      accent-color: #38bdf8;
+      cursor: pointer;
+      height: 4px;
+    }
+    .scrub-reset-btn {
+      padding: 1px 6px;
+      border-radius: 4px;
+      background: rgba(56, 189, 248, 0.14);
+      color: #7dd3fc;
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      font-size: 9.5px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .scrub-reset-btn:hover {
+      background: rgba(56, 189, 248, 0.28);
+    }
+
+    /* Blast Radius Pill */
+    .blast-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 1px 5px;
+      border-radius: 4px;
+      font-size: 9px;
+      font-weight: 700;
+      margin-right: 4px;
+      white-space: nowrap;
+    }
+    .blast-badge.DANGER {
+      background: rgba(239, 68, 68, 0.2);
+      color: #fca5a5;
+      border: 1px solid rgba(239, 68, 68, 0.45);
+    }
+    .blast-badge.WARN {
+      background: rgba(245, 158, 11, 0.2);
+      color: #fcd34d;
+      border: 1px solid rgba(245, 158, 11, 0.45);
+    }
+    .blast-badge.INFO {
+      background: rgba(56, 189, 248, 0.16);
+      color: #7dd3fc;
+      border: 1px solid rgba(56, 189, 248, 0.35);
+    }
+
+    /* Token Economy Savings Card */
+    .token-cost-card {
+      margin-top: 8px;
+      padding: 8px 11px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(15, 23, 42, 0.75));
+      border: 1px solid rgba(52, 211, 153, 0.28);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 10px;
+    }
+    .token-cost-val {
+      font-family: Consolas, monospace;
+      font-weight: 700;
+      color: #34d399;
+    }
+
+    /* Step Token Badge & Step TTFT Badge */
+    .step-token-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+      padding: 1px 5px;
+      border-radius: 4px;
+      background: rgba(168, 85, 247, 0.16);
+      border: 1px solid rgba(168, 85, 247, 0.35);
+      color: #d8b4fe;
+      font-family: "JetBrains Mono", Consolas, monospace;
+      font-size: 9px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .step-ttft-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+      padding: 1px 5px;
+      border-radius: 4px;
+      background: rgba(56, 189, 248, 0.14);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      color: #7dd3fc;
+      font-family: "JetBrains Mono", Consolas, monospace;
+      font-size: 9px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    /* TTFT (Time To First Token) Telemetry Card */
+    .token-ttft-card {
+      margin-bottom: 8px;
+      padding: 8px 11px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, rgba(56, 189, 248, 0.12), rgba(15, 23, 42, 0.78));
+      border: 1px solid rgba(56, 189, 248, 0.28);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .ttft-left {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .ttft-title-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .ttft-title {
+      font-size: 10.5px;
+      font-weight: 700;
+      color: #e2e8f0;
+    }
+    .ttft-badge {
+      font-size: 9px;
+      font-weight: 700;
+      padding: 1px 6px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      background: rgba(30, 41, 59, 0.7);
+      color: #94a3b8;
+    }
+    .ttft-badge.fast {
+      background: rgba(16, 185, 129, 0.18);
+      border-color: rgba(52, 211, 153, 0.45);
+      color: #6ee7b7;
+    }
+    .ttft-badge.normal {
+      background: rgba(56, 189, 248, 0.18);
+      border-color: rgba(56, 189, 248, 0.45);
+      color: #7dd3fc;
+    }
+    .ttft-badge.slow {
+      background: rgba(245, 158, 11, 0.2);
+      border-color: rgba(251, 191, 36, 0.48);
+      color: #fcd34d;
+    }
+    .ttft-sub {
+      font-size: 9.5px;
+      color: #94a3b8;
+      font-family: Consolas, monospace;
+    }
+    .ttft-val-wrap {
+      text-align: right;
+      flex-shrink: 0;
+    }
+    .ttft-main-val {
+      font-size: 18px;
+      font-weight: 800;
+      font-family: Consolas, "Courier New", monospace;
+      color: #38bdf8;
+      line-height: 1;
+    }
+    .ttft-main-unit {
+      font-size: 10px;
+      font-weight: 600;
+      color: #94a3b8;
+      margin-left: 2px;
+    }
+
+    /* Token Quota & Capacity Watermark Card */
+    .token-quota-card {
+      margin-top: 8px;
+      padding: 9px 12px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, rgba(30, 41, 59, 0.72), rgba(15, 23, 42, 0.88));
+      border: 1px solid rgba(148, 163, 184, 0.22);
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      font-size: 10px;
+    }
+    .quota-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .quota-title {
+      font-size: 10.5px;
+      font-weight: 700;
+      color: #e2e8f0;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .quota-badge {
+      font-size: 9px;
+      font-weight: 700;
+      padding: 1px 6px;
+      border-radius: 999px;
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      background: rgba(16, 185, 129, 0.15);
+      color: #6ee7b7;
+    }
+    .quota-badge.warn {
+      border-color: rgba(245, 158, 11, 0.45);
+      background: rgba(245, 158, 11, 0.18);
+      color: #fcd34d;
+    }
+    .quota-badge.danger {
+      border-color: rgba(239, 68, 68, 0.45);
+      background: rgba(239, 68, 68, 0.2);
+      color: #fca5a5;
+    }
+    .quota-bar-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .quota-bar-labels {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 9.5px;
+      color: #94a3b8;
+    }
+    .quota-bar-track {
+      width: 100%;
+      height: 6px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      overflow: hidden;
+      position: relative;
+    }
+    .quota-bar-fill {
+      height: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #38bdf8, #818cf8);
+      transition: width 0.35s ease, background 0.35s ease;
+    }
+    .quota-sub-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      padding-top: 5px;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .quota-sub-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: #94a3b8;
+      font-size: 9px;
+    }
+    .quota-sub-val {
+      font-family: Consolas, monospace;
+      font-weight: 700;
+      color: #e2e8f0;
+    }
+
+    .theme-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* ==================== 4 THEME STYLE OVERRIDES ==================== */
+    /* 1. Cyber (Default - Blue Cyber Hologram) */
+    body.theme-cyber .floating-pod {
+      background: radial-gradient(120% 140% at 15% 10%, rgba(30, 41, 59, 0.97) 0%, rgba(9, 13, 24, 0.98) 75%);
+    }
+
+    /* 2. Obsidian (OLED Pure Black Minimalist) */
+    body.theme-obsidian .floating-pod {
+      background: #08080a !important;
+      border-color: rgba(255, 255, 255, 0.16) !important;
+      box-shadow: 0 14px 34px rgba(0, 0, 0, 0.95), 0 0 1px rgba(255, 255, 255, 0.25) !important;
+    }
+    body.theme-obsidian .nav-tab.active {
+      background: rgba(255, 255, 255, 0.14) !important;
+      color: #ffffff !important;
+      border-color: rgba(255, 255, 255, 0.35) !important;
+    }
+    body.theme-obsidian .gauge-tile,
+    body.theme-obsidian .tok-stat-box,
+    body.theme-obsidian .token-cost-card,
+    body.theme-obsidian .token-ttft-card,
+    body.theme-obsidian .token-quota-card,
+    body.theme-obsidian .token-hero-card,
+    body.theme-obsidian .radar-box,
+    body.theme-obsidian .target-identity-bar,
+    body.theme-obsidian .session-picker,
+    body.theme-obsidian .theme-picker-drawer {
+      background: #111114 !important;
+      border-color: rgba(255, 255, 255, 0.08) !important;
+    }
+    body.theme-obsidian .theme-swatch-item.active {
+      background: rgba(16, 185, 129, 0.18) !important;
+      border-color: #10b981 !important;
+      box-shadow: 0 0 10px rgba(16, 185, 129, 0.3) !important;
+    }
+
+    /* 3. Neon (Vaporwave Synthwave Purple) */
+    body.theme-neon .floating-pod {
+      background: radial-gradient(120% 140% at 20% 15%, rgba(38, 14, 66, 0.98) 0%, rgba(12, 5, 26, 0.99) 75%) !important;
+      border-color: rgba(192, 132, 252, 0.45) !important;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.85), 0 0 24px rgba(168, 85, 247, 0.32) !important;
+    }
+    body.theme-neon .nav-tab.active {
+      background: rgba(168, 85, 247, 0.28) !important;
+      color: #f5d0fe !important;
+      border-color: rgba(192, 132, 252, 0.55) !important;
+    }
+    body.theme-neon .gauge-tile,
+    body.theme-neon .tok-stat-box,
+    body.theme-neon .token-cost-card,
+    body.theme-neon .token-ttft-card,
+    body.theme-neon .token-quota-card,
+    body.theme-neon .token-hero-card,
+    body.theme-neon .radar-box,
+    body.theme-neon .target-identity-bar,
+    body.theme-neon .session-picker,
+    body.theme-neon .theme-picker-drawer {
+      background: rgba(28, 12, 50, 0.88) !important;
+      border-color: rgba(168, 85, 247, 0.25) !important;
+    }
+    body.theme-neon .theme-swatch-item.active {
+      background: rgba(168, 85, 247, 0.26) !important;
+      border-color: #c084fc !important;
+      box-shadow: 0 0 10px rgba(192, 132, 252, 0.35) !important;
+    }
+
+    /* 4. Titanium (Industrial Cold Slate Metal) */
+    body.theme-titanium .floating-pod {
+      background: linear-gradient(180deg, #1f232c 0%, #12151c 100%) !important;
+      border-color: rgba(148, 163, 184, 0.32) !important;
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.72), inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+    }
+    body.theme-titanium .nav-tab.active {
+      background: rgba(148, 163, 184, 0.24) !important;
+      color: #f8fafc !important;
+      border-color: rgba(148, 163, 184, 0.45) !important;
+    }
+    body.theme-titanium .gauge-tile,
+    body.theme-titanium .tok-stat-box,
+    body.theme-titanium .token-cost-card,
+    body.theme-titanium .token-ttft-card,
+    body.theme-titanium .token-quota-card,
+    body.theme-titanium .token-hero-card,
+    body.theme-titanium .radar-box,
+    body.theme-titanium .target-identity-bar,
+    body.theme-titanium .session-picker,
+    body.theme-titanium .theme-picker-drawer {
+      background: #171a22 !important;
+      border-color: rgba(148, 163, 184, 0.18) !important;
+    }
+    body.theme-titanium .theme-swatch-item.active {
+      background: rgba(148, 163, 184, 0.22) !important;
+      border-color: #cbd5e1 !important;
+      box-shadow: 0 0 10px rgba(148, 163, 184, 0.3) !important;
+    }
+
+    .recent-mini-list {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      max-height: 250px;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+    }
+    .recent-mini-row {
+      background: rgba(15, 23, 42, 0.55);
+      border: 1px solid rgba(148, 163, 184, 0.12);
+      border-radius: 10px;
+      padding: 5px 9px;
+      font-size: 11px;
+      color: #e2e8f0;
+    }
+    .recent-mini-row.is-important {
+      border-color: rgba(245, 158, 11, 0.42);
+      background: linear-gradient(90deg, rgba(245, 158, 11, 0.1), rgba(15, 23, 42, 0.65));
+    }
+    .imp-step-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+      padding: 1px 5px;
+      border-radius: 4px;
+      font-size: 9px;
+      font-weight: 800;
+      background: rgba(245, 158, 11, 0.2);
+      color: #fde68a;
+      border: 1px solid rgba(245, 158, 11, 0.45);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .imp-step-badge.level-critical {
+      background: rgba(239, 68, 68, 0.22);
+      color: #fecaca;
+      border-color: rgba(239, 68, 68, 0.52);
+    }
+    .imp-step-badge.level-milestone {
+      background: rgba(56, 189, 248, 0.2);
+      color: #bae6fd;
+      border-color: rgba(56, 189, 248, 0.45);
+    }
+    .important-events-bar {
+      display: none;
+      align-items: center;
+      gap: 5px;
+      flex-wrap: wrap;
+      padding: 6px 9px;
+      border-radius: 10px;
+      background: rgba(245, 158, 11, 0.08);
+      border: 1px solid rgba(245, 158, 11, 0.25);
+    }
+    .important-events-bar.show {
+      display: flex;
+    }
+    .imp-event-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 7px;
+      border-radius: 999px;
+      font-size: 9.5px;
+      font-weight: 700;
+      background: rgba(15, 23, 42, 0.78);
+      color: #fde68a;
+      border: 1px solid rgba(245, 158, 11, 0.38);
+      cursor: pointer;
+      max-width: 195px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      transition: all 0.14s ease;
+    }
+    .imp-event-pill:hover {
+      background: rgba(245, 158, 11, 0.22);
+      border-color: #fbbf24;
+      color: #ffffff;
+    }
+    .filter-imp-btn {
+      padding: 1.5px 7px;
+      border-radius: 999px;
+      font-size: 9.5px;
+      font-weight: 700;
+      font-family: inherit;
+      background: rgba(30, 41, 59, 0.75);
+      color: #fde68a;
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      cursor: pointer;
+      transition: all 0.14s ease;
+    }
+    .filter-imp-btn:hover,
+    .filter-imp-btn.active {
+      background: rgba(245, 158, 11, 0.24);
+      color: #fffbeb;
+      border-color: #fbbf24;
+      box-shadow: 0 0 8px rgba(245, 158, 11, 0.25);
+    }
+    .step-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      width: 100%;
+      color: inherit;
+      background: none;
+      border: 0;
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+    }
+    .step-detail {
+      margin-top: 7px;
+      padding: 8px;
+      border-radius: 8px;
+      background: rgba(2, 6, 23, 0.65);
+      color: #cbd5e1;
+      max-height: 180px;
+      overflow: auto;
+      user-select: text;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      line-height: 1.5;
+    }
+    .step-detail * { user-select: text; }
+    .step-detail-label { color: #7dd3fc; font-weight: 700; }
+    .recent-mini-left {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* ==================== PAGE 4: AI CONFIG ==================== */
+    .ai-config-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11px;
+    }
+    .ai-mode-badge {
+      padding: 1.5px 7px;
+      border-radius: 999px;
+      font-size: 9.5px;
+      font-weight: 700;
+      background: rgba(56, 189, 248, 0.14);
+      color: #7dd3fc;
+      border: 1px solid rgba(56, 189, 248, 0.3);
+    }
+    .preset-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+    .preset-pill {
+      padding: 3.5px 9px;
+      border-radius: 999px;
+      font-size: 10.5px;
+      font-weight: 600;
+      font-family: inherit;
+      background: rgba(30, 41, 59, 0.8);
+      border: 1px solid rgba(148, 163, 184, 0.22);
+      color: #cbd5e1;
+      cursor: pointer;
+      transition: all 0.14s ease;
+    }
+    .preset-pill:hover {
+      background: rgba(56, 189, 248, 0.16);
+      color: #e2e8f0;
+      border-color: rgba(56, 189, 248, 0.4);
+    }
+    .preset-pill.active {
+      background: rgba(56, 189, 248, 0.22);
+      color: var(--cyan);
+      border-color: rgba(56, 189, 248, 0.58);
+      box-shadow: 0 0 8px rgba(56, 189, 248, 0.18);
+    }
+    .preset-pill.custom-pill {
+      border-color: rgba(192, 132, 252, 0.35);
+      color: #e9d5ff;
+    }
+    .preset-pill.custom-pill.active {
+      background: rgba(168, 85, 247, 0.24);
+      color: #f3e8ff;
+      border-color: rgba(192, 132, 252, 0.72);
+      box-shadow: 0 0 10px rgba(168, 85, 247, 0.25);
+    }
+    .ai-local-hint {
+      padding: 8px 10px;
+      border-radius: 10px;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.26);
+      color: #a7f3d0;
+      font-size: 10.5px;
+      line-height: 1.45;
+    }
+    .ai-fields-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+    .pod-input {
+      width: 100%;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(148, 163, 184, 0.25);
+      border-radius: 10px;
+      padding: 6px 10px;
+      color: #fff;
+      font-size: 11.5px;
+      outline: none;
+    }
+    .pod-input:focus {
+      border-color: var(--cyan);
+    }
+
+    /* ==================== MAGNETIC EDGE AUTO-HIDE LIGHT STRIP ==================== */
+
+    .edge-light-strip {
+      display: none;
+      width: 100%;
+      height: 100%;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      user-select: none;
+    }
+    body.edge-collapsed {
+      overflow: hidden;
+    }
+    body.edge-collapsed .pod-stage {
+      display: none !important;
+    }
+    body.edge-collapsed .edge-light-strip {
+      display: flex;
+    }
+
+    .edge-strip-bar {
+      position: relative;
+      border-radius: 999px;
+      background: linear-gradient(180deg, rgba(56, 189, 248, 0.95), rgba(14, 165, 233, 0.75));
+      box-shadow: 0 0 14px rgba(56, 189, 248, 0.85), inset 0 0 4px rgba(255, 255, 255, 0.65);
+      animation: edgeBreathe 2.1s ease-in-out infinite;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    body.edge-right .edge-strip-bar,
+    body.edge-left .edge-strip-bar {
+      width: 8px;
+      height: 148px;
+    }
+    body.edge-right .edge-light-strip {
+      justify-content: flex-end;
+      padding-right: 1px;
+    }
+    body.edge-left .edge-light-strip {
+      justify-content: flex-start;
+      padding-left: 1px;
+    }
+    body.edge-top .edge-strip-bar {
+      width: 184px;
+      height: 8px;
+    }
+    body.edge-top .edge-light-strip {
+      align-items: flex-start;
+      padding-top: 1px;
+    }
+
+    .edge-strip-core {
+      width: 6px;
+      height: 26px;
+      border-radius: 999px;
+      background: #ffffff;
+      box-shadow: 0 0 8px #ffffff;
+      opacity: 0.9;
+    }
+    body.edge-top .edge-strip-core {
+      width: 26px;
+      height: 6px;
+    }
+
+    .edge-light-strip.state-CODING .edge-strip-bar {
+      background: linear-gradient(180deg, #10b981, #34d399);
+      box-shadow: 0 0 15px rgba(16, 185, 129, 0.9);
+      animation-duration: 1.4s;
+    }
+    .edge-light-strip.state-THINKING .edge-strip-bar {
+      background: linear-gradient(180deg, #a855f7, #6366f1);
+      box-shadow: 0 0 15px rgba(168, 85, 247, 0.9);
+      animation-duration: 1.8s;
+    }
+    .edge-light-strip.state-LOOP_WARN .edge-strip-bar {
+      background: linear-gradient(180deg, #f59e0b, #ea580c);
+      box-shadow: 0 0 16px rgba(245, 158, 11, 0.95);
+      animation-duration: 0.75s;
+    }
+    .edge-light-strip.state-DANGER .edge-strip-bar {
+      background: linear-gradient(180deg, #ef4444, #dc2626);
+      box-shadow: 0 0 18px rgba(239, 68, 68, 1);
+      animation-duration: 0.45s;
+    }
+    .edge-light-strip.state-IDLE .edge-strip-bar {
+      background: linear-gradient(180deg, #64748b, #475569);
+      box-shadow: 0 0 10px rgba(100, 116, 139, 0.65);
+      animation-duration: 3.2s;
+    }
+
+    @keyframes edgeBreathe {
+      0%, 100% { opacity: 0.68; filter: brightness(0.95); }
+      50% { opacity: 1; filter: brightness(1.25); }
+    }
+  </style>
+</head>
+<body class="mode-cockpit">
+  <!-- 8px Magnetic Edge Auto-Hide Breathing Light Bar -->
+  <div class="edge-light-strip state-EXPLORING" id="edgeLightStrip" title="鼠标移入自动滑出 AI 监工悬浮舱">
+    <div class="edge-strip-bar">
+      <div class="edge-strip-core"></div>
+    </div>
+  </div>
+
+  <div class="pod-stage" id="podStage">
+    <div class="floating-pod state-EXPLORING" id="floatingPod">
+      <!-- ==================== 1. ALWAYS-ON CAPSULE HEADER ==================== -->
+      <div class="capsule-bar">
+        <div class="orb-wrap" onclick="toggleCockpit()" title="点击切换极简胶囊 / 展开座舱">
+          <canvas id="orbCanvas" width="104" height="104"></canvas>
+        </div>
+
+        <div class="capsule-center">
+          <div class="pipeline-row">
+            <!-- Clear Agent + Project Selector Pill -->
+            <div class="agent-pill" id="agentPill" onclick="toggleSessionPicker()" title="点击选择要监工的具体 Agent 与项目会话">
+              <span class="agent-live-dot" id="agentLiveDot"></span>
+              <span class="agent-pill-label" id="agentBadgeText">AGY · ypod</span>
+              <span style="opacity:0.75;font-size:9px;">▾</span>
+            </div>
+
+            <div class="capsule-token-pill" onclick="switchTab('token')" title="点击查看算力与配额详情">
+              ⚡ <span id="capTokSpeed">0.0</span> tok/s · <span id="capTokTotal">0</span><span id="capTokQuota" style="margin-left:4px;padding:1px 4px;border-radius:3px;font-size:8.5px;background:rgba(56,189,248,0.18);color:#7dd3fc;display:none;">余96%</span>
+            </div>
+          </div>
+
+          <div class="live-subtitle" id="liveSubtitle">正在同步本地 Agent 实时动作流...</div>
+
+          <div class="stage-track" id="stageTrack">
+              <div class="stage-node" data-idx="0"><span class="stage-dot"></span><span>理解</span></div>
+              <div class="stage-line"></div>
+              <div class="stage-node" data-idx="1"><span class="stage-dot"></span><span>探查</span></div>
+              <div class="stage-line"></div>
+              <div class="stage-node" data-idx="2"><span class="stage-dot"></span><span>编码</span></div>
+              <div class="stage-line"></div>
+              <div class="stage-node" data-idx="3"><span class="stage-dot"></span><span>验证</span></div>
+              <div class="stage-line"></div>
+              <div class="stage-node" data-idx="4"><span class="stage-dot"></span><span>完工</span></div>
+          </div>
+        </div>
+
+        <div class="capsule-right">
+          <div class="mini-ring-wrap" onclick="toggleCockpit()" title="目标契合度 (点击展开/收起座舱)">
+            <svg width="36" height="36" viewBox="0 0 38 38">
+              <circle cx="19" cy="19" r="15" fill="none" stroke="rgba(148,163,184,0.18)" stroke-width="3.2" />
+              <circle id="miniRingArc" cx="19" cy="19" r="15" fill="none" stroke="#38bdf8" stroke-width="3.2"
+                stroke-linecap="round" stroke-dasharray="94.2" stroke-dashoffset="6"
+                transform="rotate(-90 19 19)" />
+            </svg>
+            <span class="mini-ring-val" id="miniRingVal">—</span>
+          </div>
+
+          <div class="pod-toolbar">
+            <div class="pod-win-row">
+              <button type="button" class="ctrl-chip edge-chip" id="btnEdgeDock" onclick="toggleEdgeDock()" title="开启/解除屏幕边缘磁吸隐藏 (把窗口拖到右/左/上边缘也可自动吸附)">
+                <svg class="ctrl-svg" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="2" y="2.5" width="12" height="11" rx="2.2" />
+                  <line x1="10.2" y1="2.5" x2="10.2" y2="13.5" />
+                </svg>
+                <span id="edgeDockLabel">贴边</span>
+              </button>
+              <button type="button" class="pod-ctrl-btn" id="btnExpand" onclick="toggleCockpit()" title="折叠为单行胶囊 / 展开分页面板">▴</button>
+              <button type="button" class="pod-ctrl-btn close" onclick="closePod()" title="关闭悬浮舱">✕</button>
+            </div>
+
+            <button type="button" class="ctrl-chip theme-chip" id="themeSwitchBtn" onclick="toggleThemePicker()" title="点击选择座舱整体视觉主题">
+              <span class="theme-chip-left">
+                <span class="theme-chip-dot" id="themeChipDot"></span>
+                <span>风格 · <b id="themeLabelText">深空</b></span>
+              </span>
+              <span class="theme-chip-caret" id="themeChipCaret">▾</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== THEME QUICK-PICKER DRAWER ==================== -->
+      <div class="theme-picker-drawer" id="themePickerDrawer">
+        <button type="button" class="theme-swatch-item active" data-theme="cyber" onclick="selectThemeFromDrawer('cyber')">
+          <span class="theme-dot" style="background:#38bdf8;box-shadow:0 0 6px #38bdf8;"></span>
+          <span>深空科幻</span>
+        </button>
+        <button type="button" class="theme-swatch-item" data-theme="obsidian" onclick="selectThemeFromDrawer('obsidian')">
+          <span class="theme-dot" style="background:#10b981;box-shadow:0 0 6px #10b981;"></span>
+          <span>极简黑曜</span>
+        </button>
+        <button type="button" class="theme-swatch-item" data-theme="neon" onclick="selectThemeFromDrawer('neon')">
+          <span class="theme-dot" style="background:#c084fc;box-shadow:0 0 6px #c084fc;"></span>
+          <span>赛博霓虹</span>
+        </button>
+        <button type="button" class="theme-swatch-item" data-theme="titanium" onclick="selectThemeFromDrawer('titanium')">
+          <span class="theme-dot" style="background:#94a3b8;box-shadow:0 0 6px #94a3b8;"></span>
+          <span>极简钛灰</span>
+        </button>
+      </div>
+
+      <!-- ==================== AGENT SESSION PICKER DRAWER ==================== -->
+      <div class="session-picker" id="sessionPicker">
+        <div class="picker-header">
+          <span>🎯 选择最近两小时活跃的对话</span>
+          <span style="cursor:pointer;color:#38bdf8;" onclick="toggleSessionPicker()">收起 ▴</span>
+        </div>
+        <div id="sessionPickerList" style="display:flex;flex-direction:column;gap:5px;"></div>
+      </div>
+
+      <!-- ==================== 2. MULTI-PAGE COCKPIT BODY ==================== -->
+      <div class="cockpit-body" id="cockpitBody">
+        <!-- Clear Identity Bar showing exactly WHICH Agent, Project, and Task is being supervised -->
+        <div class="target-identity-bar" onclick="toggleSessionPicker()" title="点击切换监工目标">
+          <div style="display:flex;align-items:center;gap:6px;min-width:0;flex:1;">
+            <span id="idBarPlat" class="plat-tag agy">Antigravity</span>
+            <span style="color:#f8fafc;font-weight:700;" id="idBarProj">📂 ypod</span>
+            <span style="color:#64748b;">·</span>
+            <span style="color:#cbd5e1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" id="idBarTopic">开发 Agent 实时 AI 监工悬浮舱</span>
+          </div>
+          <span style="color:#38bdf8;font-size:10px;font-weight:700;flex-shrink:0;" id="idBarSwitchHint">切换目标 (5) ▾</span>
+        </div>
+
+        <!-- Global High-Risk Hook Interception Alert -->
+        <div class="intercept-pod-alert" id="interceptAlert">
+          <div class="intercept-header">
+            <span id="interceptTitle">🚨 高危动作已被 Hook 挂起拦截！</span>
+            <span id="interceptTimer">20s</span>
+          </div>
+          <div class="intercept-cmd-pill" id="interceptCmd"></div>
+          <div class="intercept-btn-row">
+            <button class="pod-action-btn deny" onclick="resolveIntercept('deny')">🛑 立即阻断 Agent</button>
+            <button class="pod-action-btn allow" onclick="resolveIntercept('allow')">✅ 授权放行</button>
+          </div>
+        </div>
+
+        <!-- Quick-Switch 4-Page Navigation Tabs -->
+        <div class="nav-tabs">
+          <div class="nav-tab active" data-tab="overview" onclick="switchTab('overview')">🧭 态势总览</div>
+          <div class="nav-tab" data-tab="token" onclick="switchTab('token')">⚡ 算力 Token</div>
+          <div class="nav-tab" data-tab="radar" onclick="switchTab('radar')">📡 动刀雷达</div>
+          <div class="nav-tab" data-tab="config" onclick="switchTab('config')">🔌 AI 接口</div>
+        </div>
+
+        <!-- PAGE 1: OVERVIEW HUD -->
+        <div class="tab-page active" id="page-overview">
+          <div class="gauges-grid">
+            <div class="gauge-tile">
+              <div class="gauge-label"><span>🎯 任务偏离判断</span><span id="gaugeAlignTag" style="color:#94a3b8;">待判断</span></div>
+              <div class="gauge-value" id="gaugeAlignVal">待判断</div>
+              <div class="gauge-bar-track"><div class="gauge-bar-fill" id="gaugeAlignBar" style="width:0%;background:#94a3b8;"></div></div>
+              <div class="goal-details" id="goalDetails">
+                <div class="gauge-sub" id="gaugeGoalText">目标: 加载中...</div>
+                <div class="gauge-sub" id="gaugeShortGoalText"></div>
+                <div class="gauge-sub" id="gaugeAlignReason"></div>
+              </div>
+              <button class="expand-link" id="goalExpandButton" type="button" aria-expanded="false" aria-controls="goalDetails" onclick="toggleGoalDetails()">展开更多 ▾</button>
+            </div>
+
+            <div class="gauge-tile">
+              <div class="gauge-label"><span>🔁 循环健康度</span><span id="gaugeLoopTag" style="color:#10b981;">流畅推进</span></div>
+              <div class="gauge-value" id="gaugeLoopVal">1x 正常</div>
+              <div class="gauge-bar-track"><div class="gauge-bar-fill" id="gaugeLoopBar" style="width:20%;background:#10b981;"></div></div>
+              <div class="gauge-sub" id="gaugeLoopSub">无重复卡死现象</div>
+            </div>
+
+            <div class="gauge-tile">
+              <div class="gauge-label"><span>🛡️ 安全态势</span><span id="gaugeRiskTag" style="color:#10b981;">低风险</span></div>
+              <div class="gauge-value" id="gaugeRiskVal">安全只读</div>
+              <div class="gauge-bar-track"><div class="gauge-bar-fill" id="gaugeRiskBar" style="width:12%;background:#10b981;"></div></div>
+              <div class="gauge-sub" id="gaugeStatsSub">累计 0 步调用</div>
+            </div>
+          </div>
+
+          <div class="ai-strip">
+            <span style="font-size:15px;">🤖</span>
+            <div class="ai-strip-text" id="aiStripText">正在实时聚合 Agent 行为轨迹...</div>
+            <button class="pod-ctrl-btn" onclick="triggerManualAI()" title="立即调用通用 AI 刷新诊断与重要事件标注">✨</button>
+          </div>
+
+          <div class="important-events-bar" id="importantEventsBar">
+            <span style="font-size:10px;font-weight:800;color:#fbbf24;white-space:nowrap;">🌟 重要事件:</span>
+            <div id="importantEventsList" style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;flex:1;min-width:0;"></div>
+          </div>
+        </div>
+
+        <!-- PAGE 2: TOKEN & THROUGHPUT WAVEFORM -->
+        <div class="tab-page" id="page-token">
+          <div class="token-hero-card">
+            <div>
+              <div style="font-size:10px;color:#c4b5fd;margin-bottom:2px;">⚡ 实时生成吞吐速率</div>
+              <div class="token-speed-big"><span id="tokSpeedNow">0.0</span> <small>tok/s</small></div>
+              <div style="font-size:10px;color:var(--text-secondary);margin-top:2px;" id="tokSpeedSub">均速 0.0 · 峰值 0.0 tok/s</div>
+            </div>
+
+            <div class="token-spark-wrap">
+              <svg id="tokenSparkSvg" viewBox="0 0 180 46" preserveAspectRatio="none">
+                <defs>
+                  <linearGradient id="sparkGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#a855f7" stop-opacity="0.6" />
+                    <stop offset="100%" stop-color="#38bdf8" stop-opacity="0.0" />
+                  </linearGradient>
+                </defs>
+                <path id="sparkArea" d="" fill="url(#sparkGrad)" />
+                <path id="sparkLine" d="" fill="none" stroke="#c084fc" stroke-width="2.2" stroke-linecap="round" />
+              </svg>
+            </div>
+          </div>
+
+          <!-- TTFT (Time To First Token) Telemetry Card -->
+          <div class="token-ttft-card">
+            <div class="ttft-left">
+              <div class="ttft-title-row">
+                <span class="ttft-title">⏱️ 首字出现耗时 (TTFT)</span>
+                <span class="ttft-badge" id="tokTtftBadge">等待响应</span>
+              </div>
+              <div class="ttft-sub" id="tokTtftSub">均值 — · 最快 — · 峰值 —</div>
+            </div>
+            <div class="ttft-val-wrap">
+              <span class="ttft-main-val" id="tokTtftNow">—</span><span class="ttft-main-unit">s</span>
+            </div>
+          </div>
+
+          <div class="token-grid-4">
+            <div class="tok-stat-box">
+              <span class="tok-stat-label">🔥 累计总消耗</span>
+              <span class="tok-stat-val" id="tokTotalMain" style="color:#38bdf8;">0</span>
+            </div>
+            <div class="tok-stat-box">
+              <span class="tok-stat-label">📥 新增输入</span>
+              <span class="tok-stat-val" id="tokInTag">0</span>
+            </div>
+            <div class="tok-stat-box">
+              <span class="tok-stat-label">📤 模型输出</span>
+              <span class="tok-stat-val" id="tokOutTag">0</span>
+            </div>
+            <div class="tok-stat-box">
+              <span class="tok-stat-label">♻️ 缓存命中率</span>
+              <span class="tok-stat-val" id="tokCacheTag" style="color:#34d399;">0%</span>
+            </div>
+          </div>
+
+          <!-- Token Savings Economy Board -->
+          <div class="token-cost-card">
+            <div>
+              <span style="color:#e2e8f0;font-weight:700;">💡 智能算力折算账单</span>
+              <span style="color:#94a3b8;font-size:9.5px;margin-left:5px;">(按通用大模型阶梯费率估算)</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span>预估花费: <span class="token-cost-val" id="tokCostVal" style="color:#f87171;">¥ 0.00</span></span>
+              <span>缓存省下: <span class="token-cost-val" id="tokSavedVal">¥ 0.00</span></span>
+            </div>
+          </div>
+
+          <!-- Token Quota & Capacity Watermark Card -->
+          <div class="token-quota-card" id="tokenQuotaCard">
+            <div class="quota-header">
+              <div class="quota-title">
+                <span>📊 算力配额与风控水位</span>
+                <span class="quota-badge" id="quotaStatusBadge">额度充足</span>
+              </div>
+              <div style="font-size:9px;color:#94a3b8;cursor:pointer;" id="quotaPlanType" onclick="promptSetDailyBudget()" title="点击自定义每日用量额度参考值">上下文与用量监控 ⚙️</div>
+            </div>
+
+            <!-- Context Window Capacity Bar -->
+            <div class="quota-bar-wrap">
+              <div class="quota-bar-labels">
+                <span>上下文容量占用 (Context Window)</span>
+                <span id="quotaContextText" style="font-family:Consolas,monospace;font-weight:700;color:#38bdf8;">0 / 200k (0%)</span>
+              </div>
+              <div class="quota-bar-track">
+                <div class="quota-bar-fill" id="quotaContextBar" style="width:0%;"></div>
+              </div>
+            </div>
+
+            <!-- Platform Rate Limit / Rolling Usage Bar -->
+            <div class="quota-bar-wrap" id="quotaRateLimitWrap">
+              <div class="quota-bar-labels">
+                <span id="quotaRateLimitLabel">5小时限流额度已用</span>
+                <span id="quotaRateLimitVal" style="font-family:Consolas,monospace;font-weight:700;color:#6ee7b7;">—</span>
+              </div>
+              <div class="quota-bar-track">
+                <div class="quota-bar-fill" id="quotaRateLimitBar" style="width:0%;"></div>
+              </div>
+            </div>
+
+            <div class="quota-sub-grid">
+              <div class="quota-sub-item">
+                <span id="quotaSubLabel1">5h 滚动窗口消耗:</span>
+                <span class="quota-sub-val" id="quotaSubVal1">0 tok</span>
+              </div>
+              <div class="quota-sub-item">
+                <span id="quotaSubLabel2">今日全局累计:</span>
+                <span class="quota-sub-val" id="quotaSubVal2">0 tok</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Per-Step Token Telemetry Metrics -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px;">
+            <div class="tok-stat-box" style="padding:6px 8px;">
+              <span class="tok-stat-label">📈 单步最高消耗</span>
+              <span class="tok-stat-val" id="tokStepPeak" style="color:#d8b4fe;font-size:11.5px;">—</span>
+            </div>
+            <div class="tok-stat-box" style="padding:6px 8px;">
+              <span class="tok-stat-label">📊 单步平均消耗</span>
+              <span class="tok-stat-val" id="tokStepAvg" style="color:#38bdf8;font-size:11.5px;">—</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- PAGE 3: FILE BLAST-RADIUS RADAR & RECENT 3 STEPS -->
+        <div class="tab-page" id="page-radar">
+          <!-- Cross-Session File Conflict Warning Banner -->
+          <div class="conflict-alert-card" id="conflictAlertCard">
+            <span style="font-size:14px;">⚔️</span>
+            <div style="flex:1;" id="conflictAlertText">检测到并发动刀冲突！</div>
+          </div>
+
+          <!-- Time-Travel Scrubbing Slider -->
+          <div class="timeline-scrub-wrap" id="timelineScrubWrap">
+            <span style="font-weight:700;" id="timelineScrubLabel">🎞️ 步骤时空视角: 最新</span>
+            <input type="range" class="timeline-scrub-input" id="timeScrubRange" min="1" max="1" value="1" oninput="onTimeScrubInput(this.value)" />
+            <button type="button" class="scrub-reset-btn" id="scrubResetBtn" onclick="resetTimeScrub()">恢复最新</button>
+          </div>
+
+          <div class="radar-box">
+            <div class="radar-header">
+              <span>📡 动刀部位气泡图 (左键打开 · 右键定位)<span class="radar-status-toast" id="radarActionStatus"></span></span>
+              <div style="display:flex;align-items:center;gap:6px;">
+                <button type="button" class="filter-imp-btn" id="btnFilterImportant" onclick="toggleImportantFilter()" title="仅显示 AI 或规则标注出的重要事件步骤">🌟 重要事件 (0)</button>
+                <div class="legend-group">
+                  <span><i class="legend-dot" style="background:#38bdf8;"></i>只读</span>
+                  <span><i class="legend-dot" style="background:#10b981;"></i>修改</span>
+                  <span><i class="legend-dot" style="background:#ef4444;"></i>删除</span>
+                </div>
+              </div>
+            </div>
+            <div class="file-bubbles" id="fileBubbles"></div>
+          </div>
+
+          <div class="recent-mini-list" id="recentMiniList" aria-label="最近活动步骤"></div>
+          <button class="expand-link" id="stepsExpandButton" type="button" onclick="toggleAllSteps()" hidden></button>
+        </div>
+
+        <!-- PAGE 4: UNIVERSAL AI API & HOOK SETTINGS -->
+        <div class="tab-page" id="page-config">
+          <div class="ai-config-header">
+            <span class="ai-config-title">🤖 深度 AI 诊断接口 <span style="font-weight:400;color:#64748b;font-size:10px;">(选填，默认纯本地引擎)</span></span>
+            <span class="ai-mode-badge local" id="aiModeBadge">🟢 纯本地启发式</span>
+          </div>
+
+          <div class="preset-pills" id="presetPills">
+            <div class="preset-pill none-pill active" data-preset="none" onclick="applyPreset('none')" title="无需配置 API，完全使用本地零延迟规则引擎">🚫 不启用 (纯本地)</div>
+            <div class="preset-pill custom-pill" data-preset="custom" onclick="applyPreset('custom')" title="自定义任意 OpenAI 兼容接口地址、中转站与模型">🛠️ 自由配置</div>
+            <div class="preset-pill" data-preset="deepseek" onclick="applyPreset('deepseek')">DeepSeek</div>
+            <div class="preset-pill" data-preset="siliconflow" onclick="applyPreset('siliconflow')">硅基流动</div>
+            <div class="preset-pill" data-preset="openai" onclick="applyPreset('openai')">OpenAI</div>
+            <div class="preset-pill" data-preset="kimi" onclick="applyPreset('kimi')">Kimi</div>
+            <div class="preset-pill" data-preset="qwen" onclick="applyPreset('qwen')">通义千问</div>
+            <div class="preset-pill" data-preset="ollama" onclick="applyPreset('ollama')">本地 Ollama</div>
+          </div>
+
+          <div class="ai-local-hint show" id="aiLocalOnlyHint">
+            💡 当前为 <b>纯本地零配置模式</b>：阶段追踪、Token 计费、并发冲突、高危拦截与时空回放均由内置引擎实时驱动，无需填写 API。如需外部大模型深度总结，请点击上方 <b>🛠️ 自由配置</b> 或厂商预设。
+          </div>
+
+          <div class="ai-fields-wrap" id="aiFieldsWrap">
+            <input class="pod-input" id="inpApiUrl" oninput="onAiFieldManualInput()" placeholder="API 地址 (支持填根域名 https://your-api.com 或完整 /v1/chat/completions)" />
+            <div style="display:flex;gap:6px;">
+              <input class="pod-input" id="inpApiKey" type="password" placeholder="API Key (本地服务或免密接口可留空)" style="flex:1;" />
+              <input class="pod-input" id="inpModel" oninput="onAiFieldManualInput()" placeholder="任意自定义模型名 (如 claude-3-7-sonnet)" style="width:165px;" />
+            </div>
+            <div style="font-size:9.5px;color:#64748b;line-height:1.3;" id="aiCustomHelper">
+              ✨ 自由配置支持任意 OpenAI 兼容接口（OneAPI / NewAPI / OpenRouter / vLLM / LM Studio），只需填根域名也会自动补全 <code style="color:#93c5fd;">/v1/chat/completions</code>。
+            </div>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:5px;font-size:10.5px;color:#94a3b8;padding-top:4px;border-top:1px solid rgba(56,189,248,0.1);">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <label style="display:flex;align-items:center;gap:5px;cursor:pointer;" title="每次新增日志动作自动推送给 AI，并按周期定时巡检标注重要事件步骤">
+                <input type="checkbox" id="chkAutoFeedAi" checked /> ⏱️ 自动定时读日志 & 每次动作反馈给 AI 标注重要事件
+              </label>
+              <select id="selAiPollSec" style="background:rgba(15,23,42,0.9);color:#7dd3fc;border:1px solid rgba(56,189,248,0.3);border-radius:5px;font-size:9.5px;padding:1px 4px;outline:none;">
+                <option value="15">每 15 秒巡检</option>
+                <option value="25" selected>每 25 秒巡检</option>
+                <option value="45">每 45 秒巡检</option>
+                <option value="60">每 60 秒巡检</option>
+              </select>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <label style="display:flex;align-items:center;gap:5px;cursor:pointer;">
+                <input type="checkbox" id="chkIntercept" checked /> 🛡️ 开启 PreToolUse 高危动作挂起拦截 (支持 AGY / Codex / CC)
+              </label>
+              <span id="saveStatusText" style="color:#10b981;font-weight:700;"></span>
+            </div>
+          </div>
+
+          <button class="pod-action-btn" id="btnSaveAiConfig" style="background:#38bdf8;color:#0f172a;width:100%;" onclick="saveUniversalAIConfig()">💾 保存监工配置</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const PRESETS = {
+      deepseek:    { url: 'https://api.deepseek.com/v1/chat/completions', model: 'deepseek-chat' },
+      siliconflow: { url: 'https://api.siliconflow.cn/v1/chat/completions', model: 'Qwen/Qwen2.5-7B-Instruct' },
+      openai:      { url: 'https://api.openai.com/v1/chat/completions', model: 'gpt-4o-mini' },
+      kimi:        { url: 'https://api.moonshot.cn/v1/chat/completions', model: 'moonshot-v1-8k' },
+      qwen:        { url: 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions', model: 'qwen-turbo' },
+      ollama:      { url: 'http://127.0.0.1:11434/v1/chat/completions', model: 'qwen2.5:7b' }
+    };
+
+    let state = {
+      mode: 'cockpit',
+      activeTab: 'overview',
+      theme: 'cyber',
+      themePickerOpen: false,
+      pickerOpen: false,
+      activePreset: 'none',
+      customDraft: { url: '', model: '' },
+      filterImportantOnly: false,
+      sessions: [],
+      conflicts: [],
+      activeSessionId: null,
+      pendingIntercepts: [],
+      goalDetailsExpanded: false,
+      showAllSteps: false,
+      openStepId: null,
+      orbState: 'EXPLORING',
+      edgeDock: { edge: null, collapsed: false },
+      scrubIndex: null,
+      config: {}
+    };
+
+    function getAgentDisplayMeta(agentType) {
+      const t = (agentType || 'agy').toLowerCase();
+      if (t === 'codex') return { short: 'Codex', full: 'OpenAI Codex', cls: 'codex' };
+      if (t === 'claude' || t === 'cc') return { short: 'CC', full: 'Claude Code', cls: 'claude' };
+      if (t === 'cursor') return { short: 'Cursor', full: 'Cursor Agent', cls: 'cursor' };
+      return { short: 'AGY', full: 'Antigravity', cls: 'agy' };
+    }
+
+    function toggleImportantFilter() {
+      state.filterImportantOnly = !state.filterImportantOnly;
+      renderPod();
+      setTimeout(syncWindowHeight, 20);
+    }
+
+    function jumpToImportantStep(stepId) {
+      if (!stepId) return;
+      const session = getCurrentSession();
+      const allSteps = session?.steps || [];
+      const idx = allSteps.findIndex((s) => s.id === stepId);
+      if (idx >= 0) {
+        state.scrubIndex = null;
+        state.showAllSteps = true;
+        state.openStepId = stepId;
+      }
+      switchTab('radar');
+      renderPod();
+      setTimeout(syncWindowHeight, 25);
+    }
+    let orbRafId = null;
+    let timerInterval = null;
+
+    const THEMES = [
+      { id: 'cyber', name: '深空科幻', label: '深空', color: '#38bdf8' },
+      { id: 'obsidian', name: '极简黑曜', label: '黑曜', color: '#10b981' },
+      { id: 'neon', name: '赛博霓虹', label: '霓虹', color: '#c084fc' },
+      { id: 'titanium', name: '极简钛灰', label: '钛灰', color: '#94a3b8' }
+    ];
+
+    function setTheme(themeId) {
+      if (!THEMES.some((t) => t.id === themeId)) themeId = 'cyber';
+      state.theme = themeId;
+      try {
+        localStorage.setItem('ypod_theme', themeId);
+      } catch {}
+      applyBodyClasses();
+      updateThemeUI();
+    }
+
+    function toggleThemePicker() {
+      state.themePickerOpen = !state.themePickerOpen;
+      if (state.themePickerOpen && state.pickerOpen) {
+        state.pickerOpen = false;
+        document.getElementById('sessionPicker')?.classList.remove('show');
+      }
+      updateThemeUI();
+      setTimeout(syncWindowHeight, 20);
+    }
+
+    function selectThemeFromDrawer(themeId) {
+      setTheme(themeId);
+      state.themePickerOpen = false;
+      updateThemeUI();
+      setTimeout(syncWindowHeight, 20);
+    }
+
+    function cycleTheme() {
+      const curId = state.theme || 'cyber';
+      const idx = THEMES.findIndex((t) => t.id === curId);
+      const nextTheme = THEMES[(idx + 1) % THEMES.length];
+      setTheme(nextTheme.id);
+    }
+
+    function updateThemeUI() {
+      const cur = THEMES.find((t) => t.id === (state.theme || 'cyber')) || THEMES[0];
+      const btnLbl = document.getElementById('themeLabelText');
+      if (btnLbl) btnLbl.textContent = `风格·${cur.label}`;
+      const dotEl = document.getElementById('themeChipDot');
+      if (dotEl) {
+        dotEl.style.background = cur.color;
+        dotEl.style.boxShadow = `0 0 6px ${cur.color}`;
+      }
+      const btnEl = document.getElementById('themeSwitchBtn');
+      if (btnEl) {
+        btnEl.classList.toggle('open', Boolean(state.themePickerOpen));
+      }
+      const caretEl = document.getElementById('themeChipCaret');
+      if (caretEl) {
+        caretEl.textContent = state.themePickerOpen ? '▴' : '▾';
+      }
+      const drawerEl = document.getElementById('themePickerDrawer');
+      if (drawerEl) {
+        drawerEl.classList.toggle('show', Boolean(state.themePickerOpen));
+      }
+      document.querySelectorAll('.theme-swatch-item').forEach((el) => {
+        el.classList.toggle('active', el.dataset.theme === cur.id);
+      });
+    }
+
+    function wakeOrbIfNeeded() {
+      if (!state.edgeDock?.collapsed && !orbRafId) {
+        orbRafId = requestAnimationFrame(drawEnergyOrb);
+      }
+    }
+    window.addEventListener('mouseenter', wakeOrbIfNeeded);
+
+    function applyBodyClasses() {
+      const currentTheme = state.theme || 'cyber';
+      const classes = [`mode-${state.mode}`, `theme-${currentTheme}`];
+      if (state.edgeDock?.edge) {
+        classes.push(`edge-${state.edgeDock.edge}`);
+        if (state.edgeDock.collapsed) {
+          classes.push('edge-collapsed');
+        } else {
+          wakeOrbIfNeeded();
+        }
+      } else {
+        wakeOrbIfNeeded();
+      }
+      document.body.className = classes.join(' ');
+      const dockBtn = document.getElementById('btnEdgeDock');
+      const dockLbl = document.getElementById('edgeDockLabel');
+      if (dockBtn && dockLbl) {
+        const edgeMap = { right: '吸右', left: '吸左', top: '吸顶' };
+        dockBtn.classList.toggle('active', Boolean(state.edgeDock?.edge));
+        dockLbl.textContent = state.edgeDock?.edge ? edgeMap[state.edgeDock.edge] || '已贴边' : '贴边';
+      }
+    }
+
+    async function toggleEdgeDock() {
+      if (window.ypodDesktop?.toggleEdgeDock) {
+        const res = await window.ypodDesktop.toggleEdgeDock();
+        if (res) {
+          state.edgeDock = { edge: res.edge, collapsed: Boolean(res.collapsed) };
+          applyBodyClasses();
+          wakeOrbIfNeeded();
+        }
+      }
+    }
+
+    // ==================== AUTO-FIT WINDOW HEIGHT (ZERO CLIPPING) ====================
+    const stageEl = document.getElementById('podStage');
+    function syncWindowHeight() {
+      if (!stageEl || !window.ypodDesktop?.setPodHeight || state.edgeDock?.collapsed) return;
+      const rect = stageEl.getBoundingClientRect();
+      if (rect.height > 60) {
+        window.ypodDesktop.setPodHeight(Math.ceil(rect.height + 4));
+      }
+    }
+    if (window.ResizeObserver) {
+      const ro = new ResizeObserver(() => syncWindowHeight());
+      ro.observe(stageEl);
+    }
+
+    // ==================== 60FPS CANVAS ENERGY CORE ORB ====================
+    const canvas = document.getElementById('orbCanvas');
+    const ctx = canvas.getContext('2d');
+    let tick = 0;
+
+    const ORB_PALETTES = {
+      EXPLORING: { primary: '#38bdf8', secondary: '#0284c7', speed: 0.035 },
+      THINKING:  { primary: '#a855f7', secondary: '#6366f1', speed: 0.028 },
+      CODING:    { primary: '#10b981', secondary: '#34d399', speed: 0.065 },
+      VERIFYING: { primary: '#22d3ee', secondary: '#3b82f6', speed: 0.05 },
+      LOOP_WARN: { primary: '#f59e0b', secondary: '#ea580c', speed: 0.09 },
+      DANGER:    { primary: '#ef4444', secondary: '#dc2626', speed: 0.12 },
+      IDLE:      { primary: '#64748b', secondary: '#475569', speed: 0.015 }
+    };
+
+    function drawEnergyOrb() {
+      if (state.edgeDock?.collapsed) {
+        orbRafId = null;
+        return;
+      }
+      const pal = ORB_PALETTES[state.orbState] || ORB_PALETTES.EXPLORING;
+      tick += pal.speed;
+
+      ctx.clearRect(0, 0, 104, 104);
+      const cx = 52, cy = 52;
+
+      const grad = ctx.createRadialGradient(cx, cy, 8, cx, cy, 46);
+      grad.addColorStop(0, pal.primary + '66');
+      grad.addColorStop(0.55, pal.secondary + '22');
+      grad.addColorStop(1, 'transparent');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(cx, cy, 46, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(tick);
+      ctx.strokeStyle = pal.primary;
+      ctx.lineWidth = 3.2;
+      ctx.lineCap = 'round';
+      for (let i = 0; i < 3; i++) {
+        const start = (i * Math.PI * 2) / 3;
+        ctx.beginPath();
+        ctx.arc(0, 0, 34, start, start + 1.15);
+        ctx.stroke();
+      }
+      ctx.restore();
+
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(-tick * 1.4);
+      ctx.strokeStyle = pal.secondary;
+      ctx.lineWidth = 2.4;
+      for (let i = 0; i < 2; i++) {
+        const start = i * Math.PI;
+        ctx.beginPath();
+        ctx.arc(0, 0, 24, start, start + 1.8);
+        ctx.stroke();
+      }
+      ctx.restore();
+
+      const pulse = 10.5 + Math.sin(tick * 2.2) * 2.4;
+      const coreGrad = ctx.createRadialGradient(cx - 3, cy - 3, 2, cx, cy, pulse);
+      coreGrad.addColorStop(0, '#ffffff');
+      coreGrad.addColorStop(0.45, pal.primary);
+      coreGrad.addColorStop(1, pal.secondary);
+      ctx.fillStyle = coreGrad;
+      ctx.beginPath();
+      ctx.arc(cx, cy, pulse, 0, Math.PI * 2);
+      ctx.fill();
+
+      orbRafId = requestAnimationFrame(drawEnergyOrb);
+    }
+    orbRafId = requestAnimationFrame(drawEnergyOrb);
+
+    function formatTok(num) {
+      const n = Number(num || 0);
+      if (n >= 1_000_000) return (n / 1_000_000).toFixed(2) + 'M';
+      if (n >= 1_000) return (n / 1_000).toFixed(1) + 'k';
+      return String(n);
+    }
+
+    function formatTimeAgo(isoStr) {
+      const diffSec = Math.max(0, Math.floor((Date.now() - Date.parse(isoStr || '')) / 1000));
+      if (diffSec < 90) return { label: '🟢 正在运行', isLive: true };
+      if (diffSec < 3600) return { label: `${Math.floor(diffSec / 60)}分钟前`, isLive: diffSec < 600 };
+      if (diffSec < 86400) return { label: `${Math.floor(diffSec / 3600)}小时前`, isLive: false };
+      return { label: `${Math.floor(diffSec / 86400)}天前`, isLive: false };
+    }
+
+    function renderSparkline(rates = []) {
+      const lineEl = document.getElementById('sparkLine');
+      const areaEl = document.getElementById('sparkArea');
+      const arr = rates.length >= 2 ? rates : [18, 42, 65, rates[0] || 55];
+      const w = 180, h = 42;
+      const maxVal = Math.max(100, ...arr);
+      const pts = arr.map((v, i) => {
+        const x = (i / (arr.length - 1)) * w;
+        const y = h - Math.max(4, (v / maxVal) * (h - 8));
+        return [x, y];
+      });
+      const linePath = pts.map((p, i) => `${i === 0 ? 'M' : 'L'}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ');
+      const areaPath = `${linePath} L${w},${h} L0,${h} Z`;
+      lineEl.setAttribute('d', linePath);
+      areaEl.setAttribute('d', areaPath);
+    }
+
+    function switchTab(tabName) {
+      state.activeTab = tabName;
+      state.pickerOpen = false;
+      state.themePickerOpen = false;
+      document.getElementById('sessionPicker').classList.remove('show');
+      updateThemeUI();
+      if (state.mode === 'capsule') {
+        state.mode = 'cockpit';
+        applyBodyClasses();
+        document.getElementById('btnExpand').textContent = '▴';
+      }
+      document.querySelectorAll('.nav-tab').forEach((el) => {
+        el.classList.toggle('active', el.dataset.tab === tabName);
+      });
+      document.querySelectorAll('.tab-page').forEach((el) => {
+        el.classList.toggle('active', el.id === `page-${tabName}`);
+      });
+      setTimeout(syncWindowHeight, 20);
+    }
+
+    function toggleCockpit() {
+      state.mode = state.mode === 'capsule' ? 'cockpit' : 'capsule';
+      if (state.mode === 'capsule') {
+        state.pickerOpen = false;
+        state.themePickerOpen = false;
+        document.getElementById('sessionPicker').classList.remove('show');
+        updateThemeUI();
+      }
+      applyBodyClasses();
+      document.getElementById('btnExpand').textContent = state.mode === 'capsule' ? '▾' : '▴';
+      setTimeout(syncWindowHeight, 20);
+    }
+
+    function toggleSessionPicker() {
+      state.pickerOpen = !state.pickerOpen;
+      if (state.pickerOpen && state.themePickerOpen) {
+        state.themePickerOpen = false;
+        updateThemeUI();
+      }
+      const picker = document.getElementById('sessionPicker');
+      picker.classList.toggle('show', state.pickerOpen);
+      renderSessionPickerList();
+      setTimeout(syncWindowHeight, 20);
+    }
+
+    function selectSessionById(id) {
+      state.activeSessionId = id;
+      state.showAllSteps = false;
+      state.openStepId = null;
+      state.scrubIndex = null;
+      state.pickerOpen = false;
+      document.getElementById('sessionPicker').classList.remove('show');
+      renderPod();
+      setTimeout(syncWindowHeight, 20);
+    }
+
+    function onTimeScrubInput(val) {
+      const session = getCurrentSession();
+      const allSteps = session?.steps || [];
+      if (allSteps.length === 0) return;
+      const v = Math.min(Math.max(1, parseInt(val, 10) || 1), allSteps.length);
+      state.scrubIndex = v;
+      renderPod();
+    }
+
+    function resetTimeScrub() {
+      state.scrubIndex = null;
+      renderPod();
+    }
+
+    function getCurrentTouchedFiles() {
+      const session = getCurrentSession();
+      if (!session) return [];
+      const allSteps = session.steps || [];
+      const isScrubbing = state.scrubIndex != null && state.scrubIndex < allSteps.length;
+      if (!isScrubbing) {
+        return session.analysis?.touchedFiles || [];
+      }
+      const activeSteps = allSteps.slice(0, state.scrubIndex);
+      const scrubbedFilesMap = new Map();
+      for (const st of activeSteps) {
+        const path = st.filePath || st.diff?.filePath || st.targetFile;
+        if (!path) continue;
+        const name = path.split(/[\\/]/).pop();
+        const mode = st.toolName?.includes('delete') || st.category === 'DELETE' ? 'DELETE' : (st.toolName?.includes('write') || st.toolName?.includes('edit') || st.category === 'WRITE' ? 'WRITE' : 'READ');
+        if (!scrubbedFilesMap.has(name)) {
+          scrubbedFilesMap.set(name, { name, fullPath: path, mode, count: 1, hasDiff: Boolean(st.diff), lastStepId: st.id });
+        } else {
+          const exist = scrubbedFilesMap.get(name);
+          exist.count++;
+          if (mode === 'WRITE' || mode === 'DELETE') exist.mode = mode;
+          if (st.diff) exist.hasDiff = true;
+          exist.lastStepId = st.id;
+        }
+      }
+      return Array.from(scrubbedFilesMap.values());
+    }
+
+    function getDailyBudgetTokens() {
+      try {
+        const saved = Number(localStorage.getItem('ypod_daily_budget_tok'));
+        return saved && saved > 0 ? saved : 50000000;
+      } catch {
+        return 50000000;
+      }
+    }
+
+    function promptSetDailyBudget() {
+      const current = getDailyBudgetTokens();
+      const currentM = (current / 1e6).toFixed(0);
+      const res = prompt('设置每日 Token 用量配额参考值 (单位: M)：\n例如输入 50 代表 50M (5000万 Token)', currentM);
+      if (res !== null) {
+        const val = parseFloat(res);
+        if (!isNaN(val) && val > 0) {
+          try {
+            localStorage.setItem('ypod_daily_budget_tok', Math.round(val * 1e6));
+          } catch {}
+          renderPod();
+        }
+      }
+    }
+
+    function formatResetCountdown(targetMs) {
+      if (!targetMs) return '';
+      const diffSec = Math.round((targetMs - Date.now()) / 1000);
+      if (diffSec <= 0) return '即将';
+      const hrs = Math.floor(diffSec / 3600);
+      const mins = Math.floor((diffSec % 3600) / 60);
+      if (hrs > 0) return `${hrs}小时${mins}分后`;
+      return `${mins}分钟后`;
+    }
+
+    function toggleGoalDetails() {
+      state.goalDetailsExpanded = !state.goalDetailsExpanded;
+      document.getElementById('goalDetails').classList.toggle('expanded', state.goalDetailsExpanded);
+      const button = document.getElementById('goalExpandButton');
+      button.textContent = state.goalDetailsExpanded ? '收起 ▴' : '展开更多 ▾';
+      button.setAttribute('aria-expanded', String(state.goalDetailsExpanded));
+      syncWindowHeight();
+    }
+
+    function toggleAllSteps() {
+      state.showAllSteps = !state.showAllSteps;
+      state.openStepId = null;
+      renderPod();
+    }
+
+    function toggleStep(index) {
+      const session = getCurrentSession();
+      const step = session?.steps?.[index];
+      if (!step) return;
+      state.openStepId = state.openStepId === step.id ? null : step.id;
+      renderPod();
+    }
+
+    let radarToastTimer = null;
+    function showRadarToast(msg, isError = false) {
+      const el = document.getElementById('radarActionStatus');
+      if (!el) return;
+      el.style.color = isError ? '#f87171' : '#34d399';
+      el.textContent = msg;
+      if (radarToastTimer) clearTimeout(radarToastTimer);
+      radarToastTimer = setTimeout(() => {
+        el.textContent = '';
+      }, 2800);
+    }
+
+    async function openFileRequest(filePath, workspacePath, mode = 'open', displayName = '') {
+      if (!filePath) {
+        showRadarToast('⚠️ 该记录无本地文件路径', true);
+        return;
+      }
+      const session = getCurrentSession();
+      const agentType = session?.agentType || '';
+      try {
+        const res = await fetch('/api/open-file', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ filePath, workspacePath, mode, agentType })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          const shortName = displayName || filePath.split(/[\\/]/).pop();
+          const editorTag = data.editor ? ` (${data.editor})` : '';
+          showRadarToast(
+            mode === 'reveal'
+              ? `📍 已在目录定位 ${shortName}`
+              : `📂 已打开 ${shortName}${editorTag}`
+          );
+        } else {
+          showRadarToast(`⚠️ ${data.error || '文件未找到'}`, true);
+        }
+      } catch {
+        showRadarToast('⚠️ 打开文件请求失败', true);
+      }
+    }
+
+    function onFileBubbleClick(fileIdx) {
+      const session = getCurrentSession();
+      const touched = getCurrentTouchedFiles();
+      const f = touched[fileIdx];
+      if (!f) return;
+
+      // 1. Expand the most recent step touching this file so its Red/Green Diff pops open
+      if (f.lastStepId) {
+        const allSteps = session.steps || [];
+        const stepIdx = allSteps.findIndex((s) => s.id === f.lastStepId);
+        if (stepIdx >= 0) {
+          if (stepIdx < allSteps.length - 3) {
+            state.showAllSteps = true;
+          }
+          state.openStepId = f.lastStepId;
+          renderPod();
+        }
+      }
+
+      // 2. Open the file in local editor
+      const targetPath = f.fullPath || f.name;
+      const wsPath = session?.analysis?.workspacePath || session?.cwd || '';
+      openFileRequest(targetPath, wsPath, 'open', f.name);
+    }
+
+    function onFileBubbleContext(fileIdx, ev) {
+      if (ev) ev.preventDefault();
+      const session = getCurrentSession();
+      const touched = getCurrentTouchedFiles();
+      const f = touched[fileIdx];
+      if (!f) return;
+      const targetPath = f.fullPath || f.name;
+      const wsPath = session?.analysis?.workspacePath || session?.cwd || '';
+      openFileRequest(targetPath, wsPath, 'reveal', f.name);
+    }
+
+    function openStepFileByIndex(stepIndex, mode = 'open') {
+      const session = getCurrentSession();
+      const st = session?.steps?.[stepIndex];
+      if (!st) return;
+      const targetPath = st.filePath || st.diff?.filePath || st.rawDetail || '';
+      const wsPath = session?.analysis?.workspacePath || session?.cwd || '';
+      openFileRequest(targetPath, wsPath, mode, st.targetFile || '');
+    }
+
+    function renderSessionPickerList() {
+      const container = document.getElementById('sessionPickerList');
+      const current = getCurrentSession();
+      container.innerHTML = state.sessions
+        .map((s) => {
+          const a = s.analysis || {};
+          const tStats = s.tokenStats || {};
+          const isSelected = current && s.id === current.id;
+          const agentMeta = getAgentDisplayMeta(s.agentType);
+          const projName = a.projectName || '工作区';
+          const topic = a.topicTitle || a.userGoal || '开发会话';
+          const timeInfo = formatTimeAgo(s.updatedAt);
+          const isFallback = Boolean(s.isHistoricalFallback);
+          const fallbackTag = isFallback ? `<span style="font-size:9px;color:#fcd34d;background:rgba(245,158,11,0.18);padding:1px 5px;border-radius:3px;border:1px solid rgba(245,158,11,0.3);">历史存档</span>` : '';
+
+          return `<div class="session-item ${isSelected ? 'active' : ''}" onclick="selectSessionById('${s.id}')">
+            <div class="session-item-left">
+              <div class="session-top-tags">
+                <span class="plat-tag ${agentMeta.cls}">${agentMeta.full}</span>
+                <span class="proj-folder-tag">📂 ${escapeHtml(projName)}</span>
+                ${fallbackTag}
+                <span style="color:${timeInfo.isLive ? '#10b981' : '#64748b'};">${timeInfo.label}</span>
+              </div>
+              <div class="session-topic-line">🎯 任务：${escapeHtml(topic)}</div>
+            </div>
+            <div class="session-item-right">
+              <span style="color:#d8b4fe;font-family:Consolas,monospace;font-weight:700;">⚡ ${Number(tStats.currentTokPerSec || 0).toFixed(1)} tok/s</span>
+              <span style="color:#94a3b8;">累计 ${formatTok(tStats.totalTokens)} · ${a.stats?.totalSteps || 0} 步</span>
+            </div>
+          </div>`;
+        })
+        .join('');
+    }
+
+    async function init() {
+      const res = await fetch('/api/state');
+      const data = await res.json();
+      state.sessions = data.sessions || [];
+      state.conflicts = data.conflicts || [];
+      state.pendingIntercepts = data.pendingIntercepts || [];
+      state.config = data.config || {};
+
+      if (state.sessions.length > 0 && !state.activeSessionId) {
+        state.activeSessionId = state.sessions[0].id;
+      }
+
+      if (state.config.customApiUrl) state.customDraft.url = state.config.customApiUrl;
+      if (state.config.customModel) state.customDraft.model = state.config.customModel;
+      if (state.config.apiUrl) document.getElementById('inpApiUrl').value = state.config.apiUrl;
+      if (state.config.model) document.getElementById('inpModel').value = state.config.model;
+      if (state.config.hasApiKey && state.config.maskedKey) {
+        document.getElementById('inpApiKey').placeholder = `已保存密钥 (${state.config.maskedKey})，留空保持不变`;
+      }
+      document.getElementById('chkIntercept').checked = state.config.interceptHighRisk !== false;
+      const chkAuto = document.getElementById('chkAutoFeedAi');
+      if (chkAuto) chkAuto.checked = state.config.autoFeedAi !== false;
+      const selPoll = document.getElementById('selAiPollSec');
+      if (selPoll && state.config.aiPollIntervalSec) {
+        selPoll.value = String(state.config.aiPollIntervalSec);
+      }
+
+      let initPreset = state.config.providerPreset || '';
+      if (
+        initPreset &&
+        initPreset !== 'none' &&
+        initPreset !== 'custom' &&
+        state.config.apiUrl &&
+        PRESETS[initPreset] &&
+        PRESETS[initPreset].url !== state.config.apiUrl
+      ) {
+        initPreset = 'custom';
+      }
+      if (!initPreset) {
+        if (!state.config.aiEnabled || (!state.config.hasApiKey && !String(state.config.apiUrl || '').startsWith('http://'))) {
+          initPreset = 'none';
+        } else {
+          const matched = Object.entries(PRESETS).find(([, p]) => p.url === state.config.apiUrl && p.model === state.config.model);
+          initPreset = matched ? matched[0] : 'custom';
+        }
+      }
+      if (initPreset === 'custom') {
+        state.customDraft.url = state.config.customApiUrl || state.config.apiUrl || '';
+        state.customDraft.model = state.config.customModel || state.config.model || '';
+      }
+      applyPreset(initPreset, true);
+
+      if (window.ypodDesktop?.onEdgeDockState) {
+        window.ypodDesktop.onEdgeDockState((dockInfo) => {
+          state.edgeDock = {
+            edge: dockInfo?.edge || null,
+            collapsed: Boolean(dockInfo?.collapsed)
+          };
+          applyBodyClasses();
+          wakeOrbIfNeeded();
+          if (!state.edgeDock.collapsed) {
+            setTimeout(syncWindowHeight, 25);
+          }
+        });
+      }
+
+      let savedTheme = 'cyber';
+      try {
+        savedTheme = localStorage.getItem('ypod_theme') || 'cyber';
+      } catch {}
+      state.theme = savedTheme;
+      applyBodyClasses();
+      updateThemeUI();
+
+      renderPod();
+      setTimeout(syncWindowHeight, 50);
+
+      const es = new EventSource('/api/events');
+      es.addEventListener('session-updated', (ev) => {
+        const { sessionId, session, conflicts } = JSON.parse(ev.data);
+        if (Array.isArray(conflicts)) {
+          state.conflicts = conflicts;
+        }
+        if (!session || !session.updatedAt || (!session.isHistoricalFallback && Date.now() - Date.parse(session.updatedAt) >= 2 * 60 * 60 * 1000)) return;
+        const idx = state.sessions.findIndex((s) => s.id === sessionId);
+        const prevStatus = idx >= 0 ? state.sessions[idx].status : null;
+        if (idx >= 0) state.sessions[idx] = session;
+        else state.sessions.unshift(session);
+
+        // Auto slide-out from screen edge when Agent finishes turn, hits error, or enters loop warning
+        const orb = session.analysis?.orbState;
+        const finishedTurn = prevStatus && prevStatus !== 'IDLE' && session.status === 'IDLE';
+        const isAlert =
+          orb === 'LOOP_WARN' ||
+          orb === 'DANGER' ||
+          session.status === 'WARNING';
+
+        if ((finishedTurn || isAlert) && window.ypodDesktop?.notifyEdgeEvent) {
+          window.ypodDesktop.notifyEdgeEvent({
+            wakeup: true,
+            sticky: state.pendingIntercepts.length > 0,
+            holdMs: isAlert ? 5500 : 4000
+          });
+        }
+
+        renderPod();
+      });
+
+      es.addEventListener('ai-insight', (ev) => {
+        const { sessionId, insight, session } = JSON.parse(ev.data);
+        const idx = state.sessions.findIndex((s) => s.id === sessionId);
+        if (idx < 0) return;
+        state.sessions[idx] = session;
+        document.getElementById('aiStripText').textContent = `[${insight.source}] ${insight.text}`;
+        renderPod();
+      });
+
+      es.addEventListener('intercept-pending', (ev) => {
+        const item = JSON.parse(ev.data);
+        state.pendingIntercepts.unshift(item);
+        if (state.mode === 'capsule') toggleCockpit();
+        if (window.ypodDesktop?.alertAttention) window.ypodDesktop.alertAttention();
+        if (window.ypodDesktop?.notifyEdgeEvent) {
+          window.ypodDesktop.notifyEdgeEvent({ wakeup: true, sticky: true, holdMs: 20000 });
+        }
+        renderPod();
+        setTimeout(syncWindowHeight, 20);
+      });
+
+      es.addEventListener('intercept-resolved', (ev) => {
+        const { id } = JSON.parse(ev.data);
+        state.pendingIntercepts = state.pendingIntercepts.filter((p) => p.id !== id);
+        if (window.ypodDesktop?.notifyEdgeEvent) {
+          window.ypodDesktop.notifyEdgeEvent({
+            wakeup: false,
+            sticky: state.pendingIntercepts.length > 0,
+            holdMs: 1500
+          });
+        }
+        renderPod();
+        setTimeout(syncWindowHeight, 20);
+      });
+      // Expire inactive conversations even when no new events arrive (retaining fallback sessions).
+      setInterval(() => {
+        state.sessions = state.sessions.filter((s) =>
+          s.isHistoricalFallback || (s.updatedAt && Date.now() - Date.parse(s.updatedAt) < 2 * 60 * 60 * 1000));
+        if (!state.sessions.some((s) => s.id === state.activeSessionId)) {
+          state.activeSessionId = state.sessions[0]?.id || null;
+        }
+        renderPod();
+      }, 30000);
+    }
+
+    function getCurrentSession() {
+      return (
+        state.sessions.find((s) => s.id === state.activeSessionId) ||
+        state.sessions[0] ||
+        null
+      );
+    }
+
+    function renderPod() {
+      const session = getCurrentSession();
+      const podEl = document.getElementById('floatingPod');
+
+      const conflictCard = document.getElementById('conflictAlertCard');
+      const scrubWrap = document.getElementById('timelineScrubWrap');
+      const tokCostValEl = document.getElementById('tokCostVal');
+      const tokSavedValEl = document.getElementById('tokSavedVal');
+
+      if (!session || !session.analysis) {
+        if (conflictCard) conflictCard.className = 'conflict-alert-card';
+        if (scrubWrap) scrubWrap.style.display = 'none';
+        if (tokCostValEl) tokCostValEl.textContent = '¥ 0.00';
+        if (tokSavedValEl) tokSavedValEl.textContent = '¥ 0.00';
+        const peakEl = document.getElementById('tokStepPeak');
+        const avgEl = document.getElementById('tokStepAvg');
+        if (peakEl) peakEl.textContent = '—';
+        if (avgEl) avgEl.textContent = '—';
+
+        document.getElementById('liveSubtitle').textContent = '最近两小时没有活跃对话，等待新动作...';
+        document.getElementById('agentBadgeText').textContent = '等待会话';
+        document.getElementById('agentLiveDot').className = 'agent-live-dot idle';
+        document.getElementById('idBarProj').textContent = '📂 —';
+        document.getElementById('idBarTopic').textContent = '暂无活跃对话';
+        document.getElementById('idBarSwitchHint').textContent = '切换目标 (0) ▾';
+        document.getElementById('miniRingVal').textContent = '—';
+        document.getElementById('miniRingArc').style.strokeDashoffset = '94.2';
+        document.getElementById('gaugeAlignVal').textContent = '待判断';
+        document.getElementById('gaugeAlignTag').textContent = '待判断';
+        document.getElementById('gaugeAlignBar').style.width = '0%';
+        document.getElementById('gaugeGoalText').textContent = '长期任务：待判断';
+        document.getElementById('gaugeShortGoalText').textContent = '短期任务：待判断';
+        document.getElementById('gaugeAlignReason').textContent = '';
+        document.getElementById('capTokSpeed').textContent = '0.0';
+        document.getElementById('capTokTotal').textContent = '0';
+        document.getElementById('tokSpeedNow').textContent = '0.0';
+        document.getElementById('tokSpeedSub').textContent = '均速 — · 峰值 —';
+        const ttftNowIdle = document.getElementById('tokTtftNow');
+        const ttftSubIdle = document.getElementById('tokTtftSub');
+        const ttftBadgeIdle = document.getElementById('tokTtftBadge');
+        if (ttftNowIdle) ttftNowIdle.textContent = '—';
+        if (ttftSubIdle) ttftSubIdle.textContent = '均值 — · 最快 — · 峰值 —';
+        if (ttftBadgeIdle) {
+          ttftBadgeIdle.textContent = '等待响应';
+          ttftBadgeIdle.className = 'ttft-badge';
+        }
+        document.getElementById('tokTotalMain').textContent = '0';
+        document.getElementById('tokInTag').textContent = '0';
+        document.getElementById('tokOutTag').textContent = '0';
+        document.getElementById('tokCacheTag').textContent = '—';
+        const capQuotaIdle = document.getElementById('capTokQuota');
+        if (capQuotaIdle) capQuotaIdle.style.display = 'none';
+        const qStatusIdle = document.getElementById('quotaStatusBadge');
+        if (qStatusIdle) { qStatusIdle.textContent = '等待数据'; qStatusIdle.className = 'quota-badge'; }
+        const qCtxTextIdle = document.getElementById('quotaContextText');
+        if (qCtxTextIdle) qCtxTextIdle.textContent = '— / — (0%)';
+        const qCtxBarIdle = document.getElementById('quotaContextBar');
+        if (qCtxBarIdle) { qCtxBarIdle.style.width = '0%'; qCtxBarIdle.style.background = '#38bdf8'; }
+        const qRlValIdle = document.getElementById('quotaRateLimitVal');
+        if (qRlValIdle) qRlValIdle.textContent = '—';
+        const qRlBarIdle = document.getElementById('quotaRateLimitBar');
+        if (qRlBarIdle) qRlBarIdle.style.width = '0%';
+        const qSub1Idle = document.getElementById('quotaSubVal1');
+        if (qSub1Idle) qSub1Idle.textContent = '—';
+        const qSub2Idle = document.getElementById('quotaSubVal2');
+        if (qSub2Idle) qSub2Idle.textContent = '—';
+        document.getElementById('fileBubbles').textContent = '暂无活跃对话';
+        document.getElementById('recentMiniList').textContent = '';
+        document.getElementById('stepsExpandButton').hidden = true;
+        document.getElementById('aiStripText').textContent = '等待新的会话活动';
+        document.getElementById('gaugeLoopVal').textContent = '—';
+        document.getElementById('gaugeLoopTag').textContent = '暂无数据';
+        document.getElementById('gaugeLoopSub').textContent = '暂无活跃对话';
+        document.getElementById('gaugeLoopBar').style.width = '0%';
+        document.getElementById('gaugeRiskVal').textContent = '—';
+        document.getElementById('gaugeRiskTag').textContent = '暂无数据';
+        document.getElementById('gaugeStatsSub').textContent = '暂无活跃对话';
+        document.getElementById('gaugeRiskBar').style.width = '0%';
+        renderSparkline([]);
+        if (state.pickerOpen) renderSessionPickerList();
+        renderInterceptBanner();
+        return;
+      }
+
+      const a = session.analysis;
+      const tStats = session.tokenStats || {};
+      const timeInfo = formatTimeAgo(session.updatedAt);
+      state.orbState = state.pendingIntercepts.length > 0 ? 'DANGER' : (a.orbState || 'EXPLORING');
+      podEl.className = `floating-pod state-${state.orbState}`;
+      const stripEl = document.getElementById('edgeLightStrip');
+      if (stripEl) {
+        stripEl.className = `edge-light-strip state-${state.orbState}`;
+      }
+
+      // 0. Cross-Session Concurrent Conflict Banner
+      if (conflictCard) {
+        if (state.conflicts && state.conflicts.length > 0) {
+          conflictCard.className = 'conflict-alert-card show';
+          const textEl = document.getElementById('conflictAlertText');
+          if (textEl) {
+            textEl.innerHTML = state.conflicts
+              .map((c) => `<div><b>⚔️ 并发动刀冲突：${escapeHtml(c.fileName)}</b><div style="font-size:9.5px;font-weight:400;opacity:0.9;">由 ${escapeHtml(c.agents)} 同时触碰修改，谨防代码相互覆盖！</div></div>`)
+              .join('');
+          }
+        } else {
+          conflictCard.className = 'conflict-alert-card';
+        }
+      }
+
+      // 1. Clear Agent + Project Pill in Top Capsule
+      const pill = document.getElementById('agentPill');
+      const agentMeta = getAgentDisplayMeta(session.agentType);
+      pill.className = `agent-pill ${agentMeta.cls === 'agy' ? '' : agentMeta.cls}`;
+      document.getElementById('agentLiveDot').className = `agent-live-dot ${timeInfo.isLive ? '' : 'idle'}`;
+      const projName = a.projectName || '工作区';
+      document.getElementById('agentBadgeText').textContent = `${agentMeta.short} · ${projName}`;
+
+      // 2. Clear Target Identity Bar in Cockpit
+      const idPlat = document.getElementById('idBarPlat');
+      idPlat.className = `plat-tag ${agentMeta.cls}`;
+      idPlat.textContent = agentMeta.full;
+      document.getElementById('idBarProj').textContent = `📂 ${projName}`;
+      const isFallback = Boolean(session.isHistoricalFallback);
+      const fallbackBadge = isFallback ? ' <span style="font-size:9.5px;color:#fcd34d;background:rgba(245,158,11,0.2);padding:1px 5px;border-radius:4px;border:1px solid rgba(245,158,11,0.35);">历史存档</span>' : '';
+      document.getElementById('idBarTopic').innerHTML = `${escapeHtml(a.topicTitle || a.userGoal)}${fallbackBadge} <span style="color:#94a3b8;">(${escapeHtml(timeInfo.label)})</span>`;
+      document.getElementById('idBarSwitchHint').textContent = `切换目标 (${state.sessions.length}) ▾`;
+
+      if (state.pickerOpen) {
+        renderSessionPickerList();
+      }
+
+      // 3. Capsule Token Speed & Total Pill
+      const speedNow = Number(tStats.currentTokPerSec || 0).toFixed(1);
+      const totalFormatted = formatTok(tStats.totalTokens || 0);
+      document.getElementById('capTokSpeed').textContent = speedNow;
+      document.getElementById('capTokTotal').textContent = totalFormatted;
+
+      // 4. 5-Stage Pipeline Track
+      const activeStage = a.stageIndex ?? 1;
+      document.querySelectorAll('#stageTrack .stage-node').forEach((node) => {
+        const idx = Number(node.dataset.idx);
+        node.className =
+          idx < activeStage
+            ? 'stage-node done'
+            : idx === activeStage
+            ? 'stage-node active'
+            : 'stage-node';
+      });
+
+      // 5. Single Live Broadcast Subtitle
+      document.getElementById('liveSubtitle').textContent = a.macroSummary;
+
+      // 6. Mini Alignment Ring
+      const labels = { aligned: '相关', off_track: '疑似偏离', uncertain: '待判断', unknown: '待判断' };
+      const status = a.alignmentStatus || 'unknown';
+      const label = labels[status] || '待判断';
+      const color = status === 'aligned' ? '#38bdf8' : status === 'off_track' ? '#f59e0b' : '#94a3b8';
+      const arc = document.getElementById('miniRingArc');
+      arc.style.strokeDashoffset = status === 'unknown' || status === 'uncertain' ? '94.2' : '23.55';
+      arc.setAttribute('stroke', color);
+      document.getElementById('miniRingVal').textContent = status === 'aligned' ? '✓' : status === 'off_track' ? '!' : '—';
+
+      // 7. Page 1: Three Cockpit Gauges
+      document.getElementById('gaugeAlignVal').textContent = label;
+      document.getElementById('gaugeAlignTag').textContent = status === 'unknown' ? '需要 AI 分析' : 'AI 判断';
+      document.getElementById('gaugeAlignTag').style.color = color;
+      document.getElementById('gaugeAlignBar').style.width = status === 'aligned' ? '70%' : status === 'off_track' ? '30%' : '0%';
+      document.getElementById('gaugeAlignBar').style.background = color;
+      document.getElementById('gaugeGoalText').textContent = `长期：${a.longTermGoal || '待判断'}`;
+      document.getElementById('gaugeShortGoalText').textContent = `短期：${a.shortTermGoal || '待判断'}`;
+      document.getElementById('gaugeAlignReason').textContent = a.alignmentReason || '';
+
+      const isLoop = Boolean(a.loopAlert?.isLooping);
+      document.getElementById('gaugeLoopVal').textContent = isLoop ? `⚠️ ${a.loopCount || 4}x 循环` : `${a.loopCount || 1}x 正常`;
+      document.getElementById('gaugeLoopTag').textContent = isLoop ? '卡死告警' : '流畅推进';
+      document.getElementById('gaugeLoopTag').style.color = isLoop ? '#f59e0b' : '#10b981';
+      document.getElementById('gaugeLoopBar').style.width = isLoop ? '92%' : '22%';
+      document.getElementById('gaugeLoopBar').style.background = isLoop ? '#f59e0b' : '#10b981';
+      document.getElementById('gaugeLoopSub').textContent = isLoop ? a.loopAlert.message : '无重复卡死现象';
+
+      const risk = a.maxRisk || { label: '安全只读', score: 8 };
+      const isHighRisk = risk.score >= 70;
+      document.getElementById('gaugeRiskVal').textContent = risk.label;
+      document.getElementById('gaugeRiskTag').textContent = isHighRisk ? '高危预警' : '安全受控';
+      document.getElementById('gaugeRiskTag').style.color = isHighRisk ? '#ef4444' : '#10b981';
+      document.getElementById('gaugeRiskBar').style.width = `${Math.max(12, risk.score)}%`;
+      document.getElementById('gaugeRiskBar').style.background = isHighRisk ? '#ef4444' : '#10b981';
+      document.getElementById('gaugeStatsSub').textContent = `本轮累计 ${a.stats.toolCalls} 次调用`;
+
+      // 8. Page 2: Token Telemetry + TTFT + Sparkline + Economy Savings Board
+      document.getElementById('tokSpeedNow').textContent = speedNow;
+      document.getElementById('tokSpeedSub').textContent =
+        `均速 ${Number(tStats.avgTokPerSec || 0).toFixed(1)} · 峰值 ${Number(tStats.peakTokPerSec || 0).toFixed(1)} tok/s`;
+
+      const curTtft = Number(tStats.currentTtftSec || 0);
+      const avgTtft = Number(tStats.avgTtftSec || 0);
+      const minTtft = Number(tStats.minTtftSec || 0);
+      const maxTtft = Number(tStats.maxTtftSec || 0);
+      const ttftNowEl = document.getElementById('tokTtftNow');
+      const ttftSubEl = document.getElementById('tokTtftSub');
+      const ttftBadgeEl = document.getElementById('tokTtftBadge');
+      if (ttftNowEl) {
+        ttftNowEl.textContent = curTtft > 0 ? curTtft.toFixed(2) : '—';
+      }
+      if (ttftSubEl) {
+        ttftSubEl.textContent =
+          curTtft > 0
+            ? `均值 ${avgTtft.toFixed(2)}s · 最快 ${minTtft.toFixed(2)}s · 峰值 ${maxTtft.toFixed(2)}s`
+            : '均值 — · 最快 — · 峰值 —';
+      }
+      if (ttftBadgeEl) {
+        if (curTtft <= 0) {
+          ttftBadgeEl.textContent = '等待首字';
+          ttftBadgeEl.className = 'ttft-badge';
+        } else if (curTtft <= 2.0) {
+          ttftBadgeEl.textContent = '🟢 极速秒回';
+          ttftBadgeEl.className = 'ttft-badge fast';
+        } else if (curTtft <= 6.0) {
+          ttftBadgeEl.textContent = '🔵 正常预热';
+          ttftBadgeEl.className = 'ttft-badge normal';
+        } else {
+          ttftBadgeEl.textContent = '🟠 长上下文预填充';
+          ttftBadgeEl.className = 'ttft-badge slow';
+        }
+      }
+
+      document.getElementById('tokTotalMain').textContent = totalFormatted;
+      document.getElementById('tokInTag').textContent = formatTok(tStats.inputTokens);
+      document.getElementById('tokOutTag').textContent = formatTok(tStats.outputTokens);
+      document.getElementById('tokCacheTag').textContent = `${tStats.cacheHitRate || 0}%`;
+      renderSparkline(tStats.turnRates || []);
+
+      const inCost = (Number(tStats.inputTokens || 0)) * 1e-6 * 1.0;
+      const cacheCost = (Number(tStats.cachedTokens || 0)) * 1e-6 * 0.1;
+      const outCost = (Number(tStats.outputTokens || 0)) * 1e-6 * 2.0;
+      const totalCost = inCost + cacheCost + outCost;
+      const savedCost = (Number(tStats.cachedTokens || 0)) * 1e-6 * 0.9;
+      if (tokCostValEl) tokCostValEl.textContent = `¥ ${totalCost.toFixed(2)}`;
+      if (tokSavedValEl) tokSavedValEl.textContent = `¥ ${savedCost.toFixed(2)}`;
+
+      const stepStats = a.stats || {};
+      const peakTok = stepStats.maxStepTokens ? `${formatTok(stepStats.maxStepTokens)}` : '—';
+      const avgTok = stepStats.avgStepTokens ? `${formatTok(stepStats.avgStepTokens)}` : '—';
+      const peakEl = document.getElementById('tokStepPeak');
+      const avgEl = document.getElementById('tokStepAvg');
+      if (peakEl) peakEl.textContent = peakTok;
+      if (avgEl) avgEl.textContent = avgTok;
+
+      // 8.5 Token Quota & Capacity Watermark Rendering
+      const ctxUsed = Number(tStats.contextUsedTokens || tStats.totalTokens || 0);
+      const ctxLimit = Number(tStats.contextWindowLimit || 200000);
+      const ctxPct = Math.min(100, Math.round((ctxUsed / ctxLimit) * 100));
+
+      const qCtxText = document.getElementById('quotaContextText');
+      const qCtxBar = document.getElementById('quotaContextBar');
+      if (qCtxText) qCtxText.textContent = `${formatTok(ctxUsed)} / ${formatTok(ctxLimit)} (${ctxPct}%)`;
+      if (qCtxBar) {
+        qCtxBar.style.width = `${ctxPct}%`;
+        qCtxBar.style.background = ctxPct > 85
+          ? 'linear-gradient(90deg, #ef4444, #f87171)'
+          : ctxPct > 70
+          ? 'linear-gradient(90deg, #f59e0b, #fbbf24)'
+          : 'linear-gradient(90deg, #38bdf8, #818cf8)';
+      }
+
+      const rl = tStats.rateLimits;
+      const qPlanType = document.getElementById('quotaPlanType');
+      const qStatusBadge = document.getElementById('quotaStatusBadge');
+      const qRlLabel = document.getElementById('quotaRateLimitLabel');
+      const qRlVal = document.getElementById('quotaRateLimitVal');
+      const qRlBar = document.getElementById('quotaRateLimitBar');
+      const qSubVal1 = document.getElementById('quotaSubVal1');
+      const qSubVal2 = document.getElementById('quotaSubVal2');
+      const capQuotaPill = document.getElementById('capTokQuota');
+
+      if (rl && typeof rl.primaryUsedPercent === 'number') {
+        if (qPlanType) qPlanType.textContent = `Codex ${rl.planType || 'PLUS'} · 平台限流`;
+        const priPct = rl.primaryUsedPercent;
+        const remPct = rl.primaryRemainingPercent;
+        if (qRlLabel) qRlLabel.textContent = `5小时限流额度已用 (${rl.primaryWindowMinutes || 300}分钟窗口)`;
+        if (qRlVal) qRlVal.textContent = `${priPct}% (剩余 ${remPct}%)`;
+        if (qRlBar) {
+          qRlBar.style.width = `${priPct}%`;
+          qRlBar.style.background = priPct > 85
+            ? 'linear-gradient(90deg, #ef4444, #f87171)'
+            : priPct > 65
+            ? 'linear-gradient(90deg, #f59e0b, #fbbf24)'
+            : 'linear-gradient(90deg, #10b981, #34d399)';
+        }
+        if (qStatusBadge) {
+          if (priPct > 85) {
+            qStatusBadge.textContent = '接近限流';
+            qStatusBadge.className = 'quota-badge danger';
+          } else if (priPct > 65) {
+            qStatusBadge.textContent = '额度紧张';
+            qStatusBadge.className = 'quota-badge warn';
+          } else {
+            qStatusBadge.textContent = `剩余 ${remPct}%`;
+            qStatusBadge.className = 'quota-badge';
+          }
+        }
+        if (qSubVal1) qSubVal1.textContent = `${formatTok(tStats.window5hTokens || ctxUsed)}`;
+        if (qSubVal2) qSubVal2.textContent = `${rl.secondaryUsedPercent || 0}% 已用 · 剩余 ${rl.secondaryRemainingPercent || 100}%`;
+        if (capQuotaPill) {
+          capQuotaPill.style.display = 'inline-block';
+          capQuotaPill.textContent = `余${remPct}%`;
+        }
+      } else if (session.agentType === 'agy' || tStats.agentTier?.provider === 'Antigravity') {
+        const tier = tStats.agentTier || { plan: 'Google AI Ultra', isUnlimited: true };
+        const todayTok = Number(tStats.todayTokens || tStats.totalTokens || 0);
+        const win5hTok = Number(tStats.window5hTokens || ctxUsed || 0);
+
+        if (rl && rl.isAntigravityNative && typeof rl.primaryRemainingPercent === 'number') {
+          const remPct = rl.primaryRemainingPercent;
+          const usedPct = rl.primaryUsedPercent;
+          const modelTitle = rl.modelName ? ` (${rl.modelName.replace('MODEL_PLACEHOLDER_', '')})` : '';
+          const resetTxt = formatResetCountdown(rl.primaryResetsAt);
+
+          if (qPlanType) qPlanType.textContent = `Antigravity · ${tier.plan}${modelTitle}`;
+          if (qRlLabel) qRlLabel.textContent = `模型可用配额水位 (${resetTxt ? resetTxt + '重置' : '实时'})`;
+          if (qRlVal) qRlVal.textContent = `剩余 ${remPct}% (已用 ${usedPct}%)`;
+          if (qRlBar) {
+            qRlBar.style.width = `${remPct}%`;
+            qRlBar.style.background = remPct < 20
+              ? 'linear-gradient(90deg, #ef4444, #f87171)'
+              : remPct < 40
+              ? 'linear-gradient(90deg, #f59e0b, #fbbf24)'
+              : 'linear-gradient(90deg, #10b981, #34d399)';
+          }
+          if (qStatusBadge) {
+            if (remPct < 20) {
+              qStatusBadge.textContent = '配额紧张';
+              qStatusBadge.className = 'quota-badge danger';
+            } else if (remPct < 40) {
+              qStatusBadge.textContent = '适度使用';
+              qStatusBadge.className = 'quota-badge warn';
+            } else {
+              qStatusBadge.textContent = `剩余 ${remPct}%`;
+              qStatusBadge.className = 'quota-badge';
+            }
+          }
+          if (qSubVal1) qSubVal1.textContent = `${formatTok(win5hTok)} (5h滚动)`;
+          if (qSubVal2) qSubVal2.textContent = `${formatTok(todayTok)} (今日累计)`;
+          if (capQuotaPill) {
+            capQuotaPill.style.display = 'inline-block';
+            capQuotaPill.textContent = `余${remPct}%`;
+          }
+        } else {
+          if (qPlanType) qPlanType.textContent = `Antigravity · ${tier.plan}`;
+          if (qRlLabel) qRlLabel.textContent = `今日累计用量 (${tier.plan} 顶格计划)`;
+          if (qRlVal) qRlVal.textContent = `${formatTok(todayTok)} (顶格特权 · 额度充足)`;
+          if (qRlBar) {
+            qRlBar.style.width = '100%';
+            qRlBar.style.background = 'linear-gradient(90deg, #10b981, #38bdf8)';
+          }
+          if (qStatusBadge) {
+            qStatusBadge.textContent = '🟢 顶格特权';
+            qStatusBadge.className = 'quota-badge';
+          }
+          if (qSubVal1) qSubVal1.textContent = `${formatTok(win5hTok)} (滚动)`;
+          if (qSubVal2) qSubVal2.textContent = `${formatTok(todayTok)} (${tier.plan})`;
+          if (capQuotaPill) {
+            capQuotaPill.style.display = 'inline-block';
+            capQuotaPill.textContent = 'Ultra';
+          }
+        }
+      } else {
+        const budgetTokens = getDailyBudgetTokens();
+        const todayTok = Number(tStats.todayTokens || tStats.totalTokens || 0);
+        const win5hTok = Number(tStats.window5hTokens || ctxUsed || 0);
+        const budgetPct = Math.min(100, Number(((todayTok / budgetTokens) * 100).toFixed(1)));
+        const remBudgetPct = Math.max(0, Number((100 - budgetPct).toFixed(1)));
+        const win5hPct = Number(((win5hTok / budgetTokens) * 100).toFixed(1));
+
+        if (qPlanType) qPlanType.textContent = `API 实时按量 · 日配额 ${formatTok(budgetTokens)} ⚙️`;
+        if (qRlLabel) qRlLabel.textContent = `今日消耗额度水位 (日配额 ${formatTok(budgetTokens)})`;
+        if (qRlVal) qRlVal.textContent = `${formatTok(todayTok)} (${budgetPct}% 已用 · 剩 ${remBudgetPct}%)`;
+        if (qRlBar) {
+          qRlBar.style.width = `${budgetPct}%`;
+          qRlBar.style.background = budgetPct > 85
+            ? 'linear-gradient(90deg, #ef4444, #f87171)'
+            : budgetPct > 70
+            ? 'linear-gradient(90deg, #f59e0b, #fbbf24)'
+            : 'linear-gradient(90deg, #10b981, #34d399)';
+        }
+        if (qStatusBadge) {
+          if (budgetPct > 85) {
+            qStatusBadge.textContent = '预算告警';
+            qStatusBadge.className = 'quota-badge danger';
+          } else if (budgetPct > 70) {
+            qStatusBadge.textContent = '消耗偏高';
+            qStatusBadge.className = 'quota-badge warn';
+          } else {
+            qStatusBadge.textContent = `剩余 ${remBudgetPct}%`;
+            qStatusBadge.className = 'quota-badge';
+          }
+        }
+        if (qSubVal1) qSubVal1.textContent = `${formatTok(win5hTok)} (占 ${win5hPct}%)`;
+        if (qSubVal2) qSubVal2.textContent = `${formatTok(todayTok)} (占日额度 ${budgetPct}%)`;
+        if (capQuotaPill) {
+          capQuotaPill.style.display = 'inline-block';
+          capQuotaPill.textContent = `余${remBudgetPct}%`;
+        }
+      }
+
+      // 9. Page 3: Time-Travel Scrubbing Slider + File Blast-Radius Bubbles + Recent Steps
+      const allSteps = session.steps || [];
+      const isScrubbing = state.scrubIndex != null && state.scrubIndex < allSteps.length;
+      const activeSteps = isScrubbing ? allSteps.slice(0, state.scrubIndex) : allSteps;
+
+      const scrubInput = document.getElementById('timeScrubRange');
+      const scrubLabel = document.getElementById('timelineScrubLabel');
+      const scrubResetBtn = document.getElementById('scrubResetBtn');
+      if (scrubWrap && scrubInput && scrubLabel) {
+        if (allSteps.length > 1) {
+          scrubWrap.style.display = 'flex';
+          scrubInput.max = allSteps.length;
+          scrubInput.value = isScrubbing ? state.scrubIndex : allSteps.length;
+          if (isScrubbing) {
+            scrubLabel.innerHTML = `🎞️ 步骤时空视角: <span style="color:#38bdf8;font-weight:800;">第 ${state.scrubIndex}/${allSteps.length} 步 (历史快照)</span>`;
+            if (scrubResetBtn) scrubResetBtn.style.display = 'inline-block';
+          } else {
+            scrubLabel.innerHTML = `🎞️ 步骤时空视角: <span style="color:#34d399;font-weight:700;">最新 (${allSteps.length}/${allSteps.length})</span>`;
+            if (scrubResetBtn) scrubResetBtn.style.display = 'none';
+          }
+        } else {
+          scrubWrap.style.display = 'none';
+        }
+      }
+
+      const bubblesEl = document.getElementById('fileBubbles');
+      const files = getCurrentTouchedFiles();
+      if (files.length === 0) {
+        bubblesEl.innerHTML = `<span style="font-size:10.5px;color:#64748b;">${isScrubbing ? '该快照节点前暂未触碰文件' : '当前仅做内部推理，暂未触碰本地文件'}</span>`;
+      } else {
+        bubblesEl.innerHTML = files
+          .map((f, fIdx) => {
+            const icon = f.mode === 'DELETE' ? '🗑️' : f.mode === 'WRITE' ? '🔧' : '📖';
+            const tip = f.fullPath
+              ? `左键：打开 ${f.fullPath} 并展开最新 Diff\n右键：在资源管理器中定位`
+              : `点击展开「${f.name}」最近操作详情`;
+            return `<button type="button" class="file-bubble mode-${f.mode}" title="${escapeHtml(tip)}" onclick="onFileBubbleClick(${fIdx})" oncontextmenu="onFileBubbleContext(${fIdx}, event)">
+              <span>${icon}</span>
+              <span>${escapeHtml(f.name)}</span>
+              ${f.hasDiff ? '<span style="color:#a7f3d0;font-weight:800;">±</span>' : ''}
+              <span class="bubble-count">×${f.count}</span>
+            </button>`;
+          })
+          .join('');
+      }
+
+      // 9.5 Important Events Bar (Page 1) & Filter Button (Page 3)
+      const impEvents = a.importantEvents || [];
+      const impBarEl = document.getElementById('importantEventsBar');
+      const impListEl = document.getElementById('importantEventsList');
+      if (impBarEl && impListEl) {
+        if (impEvents.length > 0) {
+          impBarEl.className = 'important-events-bar show';
+          impListEl.innerHTML = impEvents
+            .slice(-4)
+            .reverse()
+            .map((ev) => {
+              const srcTag = ev.source === 'AI' ? '🤖' : '⚡';
+              return `<button type="button" class="imp-event-pill" title="${escapeHtml(ev.reason || ev.title)}（点击定位到该步详情）" onclick="jumpToImportantStep('${escapeHtml(ev.stepId)}')">
+                <span>${srcTag}[${escapeHtml(ev.tag)}]</span>
+                <span>${escapeHtml((ev.targetFile && ev.targetFile !== 'Terminal' ? ev.targetFile + ' · ' : '') + ev.title)}</span>
+              </button>`;
+            })
+            .join('');
+        } else {
+          impBarEl.className = 'important-events-bar';
+          impListEl.innerHTML = '';
+        }
+      }
+
+      const filterBtn = document.getElementById('btnFilterImportant');
+      const impStepsInSlice = activeSteps.filter((st) => Boolean(st.aiImportant));
+      if (filterBtn) {
+        filterBtn.classList.toggle('active', Boolean(state.filterImportantOnly));
+        filterBtn.textContent = state.filterImportantOnly
+          ? `🌟 仅看重要 (${impStepsInSlice.length}) ✓`
+          : `🌟 重要事件 (${impStepsInSlice.length})`;
+      }
+
+      const recentEl = document.getElementById('recentMiniList');
+      const mappedSteps = activeSteps
+        .map((step, index) => ({ step, index }))
+        .filter(({ step }) => !state.filterImportantOnly || Boolean(step.aiImportant));
+      const visibleSteps = mappedSteps
+        .slice(state.showAllSteps || state.filterImportantOnly ? 0 : -3)
+        .reverse();
+      const previousScrollTop = recentEl.scrollTop;
+      recentEl.innerHTML = visibleSteps.length === 0
+        ? `<div style="font-size:10.5px;color:#64748b;padding:6px 4px;">${state.filterImportantOnly ? '当前暂无标注的重要事件步骤，点击右上角「🌟 仅看重要」恢复全部步骤' : '暂无活动步骤'}</div>`
+        : visibleSteps
+        .map(({ step: st, index }) => {
+          const t = st.timestamp
+            ? new Date(st.timestamp).toLocaleTimeString('zh-CN', { hour12: false })
+            : '';
+          const isOpen = state.openStepId === st.id;
+          const diffObj = st.diff && Array.isArray(st.diff.lines) && st.diff.lines.length > 0 ? st.diff : null;
+          const hasFileTarget = Boolean(st.filePath || diffObj?.filePath);
+
+          const diffBadgeHtml = diffObj
+            ? `<span class="diff-stat-pill"><span class="add">+${diffObj.addedCount || 0}</span><span class="del">-${diffObj.removedCount || 0}</span></span>`
+            : '';
+
+          const blastBadgeHtml = st.blastRadius?.badge
+            ? `<span class="blast-badge ${escapeHtml(st.blastRadius.level || 'INFO')}" title="${escapeHtml(st.blastRadius.scope || '')}">${escapeHtml(st.blastRadius.badge)}</span>`
+            : '';
+
+          const impBadgeHtml = st.aiImportant
+            ? `<span class="imp-step-badge level-${escapeHtml(st.aiImportant.level || 'high')}" title="${escapeHtml((st.aiImportant.source === 'AI' ? 'AI 标注: ' : '关键事件: ') + (st.aiImportant.reason || ''))}">🌟 ${escapeHtml(st.aiImportant.tag)}</span>`
+            : '';
+
+          const stepTokBadge = st.tokens && st.tokens.totalTokens > 0
+            ? `<span class="step-token-badge" title="本步消耗: 输入 ${formatTok(st.tokens.inputTokens)} · 缓存 ${formatTok(st.tokens.cachedTokens)} · 输出 ${formatTok(st.tokens.outputTokens)}">⚡ ${formatTok(st.tokens.totalTokens)}</span>`
+            : '';
+
+          const stepTtftBadge = st.tokens && Number(st.tokens.ttftSec) > 0
+            ? `<span class="step-ttft-badge" title="首字出现耗时 (Time To First Token): ${Number(st.tokens.ttftSec).toFixed(2)} 秒">⏱️ 首字 ${Number(st.tokens.ttftSec).toFixed(1)}s</span>`
+            : '';
+
+          let diffCardHtml = '';
+          if (diffObj) {
+            const displayPath = diffObj.filePath || st.filePath || st.targetFile || '代码变更';
+            const diffLinesHtml = diffObj.lines
+              .map((ln) => {
+                const sign = ln.type === 'add' ? '+' : ln.type === 'del' ? '-' : ln.type === 'meta' ? '§' : ' ';
+                return `<div class="diff-line ${escapeHtml(ln.type)}"><span class="diff-sign">${sign}</span><span>${escapeHtml(ln.text)}</span></div>`;
+              })
+              .join('');
+            const truncNotice = diffObj.truncated
+              ? `<div class="diff-line meta"><span class="diff-sign">…</span><span>其余代码变更已折叠</span></div>`
+              : '';
+            diffCardHtml = `<div class="mini-diff-card">
+              <div class="mini-diff-header">
+                <span class="mini-diff-file">📄 ${escapeHtml(displayPath)}</span>
+                <div class="mini-diff-actions">
+                  ${diffBadgeHtml}
+                  ${
+                    hasFileTarget
+                      ? `<button type="button" class="mini-diff-btn" onclick="openStepFileByIndex(${index}, 'open')">📂 打开文件</button>
+                         <button type="button" class="mini-diff-btn" onclick="openStepFileByIndex(${index}, 'reveal')">📍 定位目录</button>`
+                      : ''
+                  }
+                </div>
+              </div>
+              <div class="mini-diff-body">${diffLinesHtml}${truncNotice}</div>
+            </div>`;
+          } else if (hasFileTarget) {
+            diffCardHtml = `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;padding:4px 7px;background:rgba(15,23,42,0.8);border-radius:6px;border:1px solid rgba(56,189,248,0.2);">
+              <span style="font-size:10px;color:#93c5fd;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">📄 ${escapeHtml(st.filePath)}</span>
+              <div class="mini-diff-actions">
+                <button type="button" class="mini-diff-btn" onclick="openStepFileByIndex(${index}, 'open')">📂 打开文件</button>
+                <button type="button" class="mini-diff-btn" onclick="openStepFileByIndex(${index}, 'reveal')">📍 定位目录</button>
+              </div>
+            </div>`;
+          }
+
+          const fields = [
+            ...(st.aiImportant ? [
+              ['🌟 重要事件标注', `[${st.aiImportant.tag}] ${st.aiImportant.reason || ''} (${st.aiImportant.source === 'AI' ? '🤖 AI 识别' : '⚡ 规则识别'})`]
+            ] : []),
+            ['时间', st.timestamp ? new Date(st.timestamp).toLocaleString('zh-CN', { hour12: false }) : '未知'],
+            ['类型', st.category || st.kind],
+            ...(st.tokens && st.tokens.totalTokens > 0 ? [
+              ['本步 Token', `${Number(st.tokens.totalTokens).toLocaleString()} tok (输入 ${Number(st.tokens.inputTokens || 0).toLocaleString()} · 缓存 ${Number(st.tokens.cachedTokens || 0).toLocaleString()} · 输出 ${Number(st.tokens.outputTokens || 0).toLocaleString()})`]
+            ] : []),
+            ...(st.tokens && Number(st.tokens.ttftSec) > 0 ? [
+              ['首字响应 (TTFT)', `${Number(st.tokens.ttftSec).toFixed(2)} 秒`]
+            ] : []),
+            ['工具', st.toolName],
+            ['摘要', st.humanSummary || st.title],
+            ['原始详情', st.rawDetail],
+            ['工具输入', st.toolInput],
+            ['风险提示', st.risk?.reason]
+          ].filter(([, value]) => value != null && value !== '');
+          const details = fields.map(([name, value]) =>
+            `<div><span class="step-detail-label">${escapeHtml(name)}：</span>${escapeHtml(String(value))}</div>`
+          ).join('');
+          return `<div class="recent-mini-row ${st.aiImportant ? 'is-important' : ''}">
+            <button type="button" class="step-toggle" aria-expanded="${isOpen}" onclick="toggleStep(${index})">
+            <span class="recent-mini-left">
+              <span>${escapeHtml(st.icon || '🔹')}</span>
+              <span style="font-weight:700;color:#93c5fd;">[${escapeHtml(st.category || st.kind)}]</span>
+              ${impBadgeHtml}
+              ${blastBadgeHtml}
+              <span>${escapeHtml(st.humanSummary || st.title)}</span>
+            </span>
+            <span style="font-size:9.5px;color:#94a3b8;white-space:nowrap;display:inline-flex;align-items:center;gap:4px;">${stepTtftBadge}${stepTokBadge}${diffBadgeHtml}${escapeHtml(t)} ${isOpen ? '▴' : '▾'}</span>
+            </button>
+            ${isOpen ? `<div class="step-detail">${diffCardHtml}${details || '没有可用的详细记录'}</div>` : ''}
+          </div>`;
+        })
+        .join('');
+      recentEl.scrollTop = previousScrollTop;
+      const stepsButton = document.getElementById('stepsExpandButton');
+      stepsButton.hidden = state.filterImportantOnly || activeSteps.length <= 3;
+      stepsButton.textContent = state.showAllSteps ? '收起步骤 ▴' : `展开更多步骤（${activeSteps.length} 条） ▾`;
+
+      // 10. AI Strip
+      if (session.latestAiInsight && session.latestAiInsight.text) {
+        document.getElementById('aiStripText').textContent =
+          `[${session.latestAiInsight.source || 'AI'}] ${session.latestAiInsight.text}`;
+      } else {
+        document.getElementById('aiStripText').textContent =
+          `[${a.phase}] ${a.macroSummary}`;
+      }
+
+      renderInterceptBanner();
+      syncWindowHeight();
+    }
+
+    function renderInterceptBanner() {
+      const box = document.getElementById('interceptAlert');
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
+      if (state.pendingIntercepts.length === 0) {
+        box.className = 'intercept-pod-alert';
+        return;
+      }
+      const item = state.pendingIntercepts[0];
+      box.className = 'intercept-pod-alert show';
+      document.getElementById('interceptTitle').textContent =
+        `🚨 [${item.agentName}] ${item.risk.reason}`;
+      document.getElementById('interceptCmd').textContent = item.rawDetail || item.title;
+
+      const updateSec = () => {
+        const elapsed = Math.floor((Date.now() - item.createdAt) / 1000);
+        const left = Math.max(0, (item.timeoutSec || 20) - elapsed);
+        document.getElementById('interceptTimer').textContent = `${left}s`;
+      };
+      updateSec();
+      timerInterval = setInterval(updateSec, 500);
+    }
+
+    async function resolveIntercept(decision) {
+      if (state.pendingIntercepts.length === 0) return;
+      const item = state.pendingIntercepts[0];
+      await fetch('/api/intercept-decision', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: item.id, decision })
+      });
+    }
+
+    function applyPreset(key, fromInit = false) {
+      if (state.activePreset === 'custom' && key !== 'custom') {
+        state.customDraft.url = document.getElementById('inpApiUrl').value;
+        state.customDraft.model = document.getElementById('inpModel').value;
+      }
+      state.activePreset = key;
+
+      const isNone = key === 'none';
+      const isCustom = key === 'custom';
+      const p = PRESETS[key];
+
+      const fieldsWrap = document.getElementById('aiFieldsWrap');
+      const localHint = document.getElementById('aiLocalOnlyHint');
+      const modeBadge = document.getElementById('aiModeBadge');
+      const saveBtn = document.getElementById('btnSaveAiConfig');
+      const urlInp = document.getElementById('inpApiUrl');
+      const modelInp = document.getElementById('inpModel');
+
+      if (fieldsWrap) fieldsWrap.classList.toggle('show', !isNone);
+      if (localHint) localHint.classList.toggle('show', isNone);
+
+      if (modeBadge) {
+        if (isNone) {
+          modeBadge.className = 'ai-mode-badge local';
+          modeBadge.textContent = '🟢 纯本地启发式';
+        } else if (isCustom) {
+          modeBadge.className = 'ai-mode-badge custom';
+          modeBadge.textContent = '🛠️ 自由配置接口';
+        } else {
+          modeBadge.className = 'ai-mode-badge';
+          modeBadge.textContent = `🔌 ${key.toUpperCase()} 预设`;
+        }
+      }
+
+      if (saveBtn) {
+        saveBtn.textContent = isNone
+          ? '💾 保存本地监工配置 (不调用外部 AI)'
+          : '💾 保存并立即测试通用 AI 解读';
+      }
+
+      if (p) {
+        urlInp.value = p.url;
+        modelInp.value = p.model;
+      } else if (isCustom) {
+        if (state.customDraft.url || state.customDraft.model) {
+          urlInp.value = state.customDraft.url;
+          modelInp.value = state.customDraft.model;
+        } else if (!fromInit) {
+          const curUrl = urlInp.value.trim();
+          const isBuiltInUrl = Object.values(PRESETS).some((preset) => preset.url === curUrl);
+          if (isBuiltInUrl) {
+            urlInp.value = '';
+            modelInp.value = '';
+          }
+          setTimeout(() => urlInp.focus(), 20);
+        }
+      }
+
+      document.querySelectorAll('#presetPills .preset-pill').forEach((el) => {
+        el.classList.toggle('active', el.dataset.preset === key);
+      });
+      setTimeout(syncWindowHeight, 20);
+    }
+
+    function onAiFieldManualInput() {
+      const urlVal = document.getElementById('inpApiUrl').value.trim();
+      const modelVal = document.getElementById('inpModel').value.trim();
+      const matched = Object.entries(PRESETS).find(([, p]) => p.url === urlVal && p.model === modelVal);
+      if (matched) {
+        state.activePreset = matched[0];
+      } else {
+        state.activePreset = 'custom';
+        state.customDraft.url = urlVal;
+        state.customDraft.model = modelVal;
+      }
+      const modeBadge = document.getElementById('aiModeBadge');
+      if (modeBadge) {
+        if (state.activePreset === 'custom') {
+          modeBadge.className = 'ai-mode-badge custom';
+          modeBadge.textContent = '🛠️ 自由配置接口';
+        } else {
+          modeBadge.className = 'ai-mode-badge';
+          modeBadge.textContent = `🔌 ${state.activePreset.toUpperCase()} 预设`;
+        }
+      }
+      document.querySelectorAll('#presetPills .preset-pill').forEach((el) => {
+        el.classList.toggle('active', el.dataset.preset === state.activePreset);
+      });
+    }
+
+    async function saveUniversalAIConfig() {
+      const statusEl = document.getElementById('saveStatusText');
+      const isNone = state.activePreset === 'none';
+      statusEl.style.color = '#38bdf8';
+      statusEl.textContent = isNone ? '⏳ 正在保存配置...' : '⏳ 正在验证接口并解读日志...';
+      const apiUrl = document.getElementById('inpApiUrl').value.trim();
+      const apiKey = document.getElementById('inpApiKey').value.trim();
+      const model = document.getElementById('inpModel').value.trim();
+      const interceptHighRisk = document.getElementById('chkIntercept').checked;
+      const autoFeedAi = document.getElementById('chkAutoFeedAi')?.checked !== false;
+      const aiPollIntervalSec = Number(document.getElementById('selAiPollSec')?.value || 25);
+
+      if (state.activePreset === 'custom') {
+        state.customDraft.url = apiUrl;
+        state.customDraft.model = model;
+      }
+
+      try {
+        const res = await fetch('/api/config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            providerPreset: state.activePreset,
+            aiEnabled: !isNone,
+            apiUrl,
+            apiKey,
+            model,
+            customApiUrl: state.customDraft.url,
+            customModel: state.customDraft.model,
+            interceptHighRisk,
+            autoFeedAi,
+            aiPollIntervalSec
+          })
+        });
+        const data = await res.json();
+        if (data.config) {
+          state.config = data.config;
+          if (data.config.apiUrl) {
+            document.getElementById('inpApiUrl').value = data.config.apiUrl;
+          }
+          if (data.config.hasApiKey && data.config.maskedKey) {
+            const keyInp = document.getElementById('inpApiKey');
+            keyInp.value = '';
+            keyInp.placeholder = `已保存密钥 (${data.config.maskedKey})，留空保持不变`;
+          }
+        }
+        if (data.insight) {
+          document.getElementById('aiStripText').textContent = `[${data.insight.source || 'AI'}] ${data.insight.text || ''}`;
+          if (data.insight.ok === false) {
+            statusEl.style.color = '#f87171';
+            statusEl.textContent = `⚠️ ${data.insight.text || '接口调用异常'}`;
+            return;
+          }
+        }
+        statusEl.style.color = '#10b981';
+        statusEl.textContent = isNone ? '✅ 已切换为纯本地引擎' : '✅ 验证通过并已生效';
+        setTimeout(() => {
+          statusEl.textContent = '';
+          switchTab('overview');
+        }, 650);
+      } catch (err) {
+        statusEl.style.color = '#f87171';
+        statusEl.textContent = `⚠️ 保存失败: ${err.message}`;
+      }
+    }
+
+    async function triggerManualAI() {
+      const session = getCurrentSession();
+      if (!session) return;
+      document.getElementById('aiStripText').textContent = '🤖 正在请求通用 AI 接口解读日志并标注重要事件步骤...';
+      try {
+        const res = await fetch('/api/ai-explain', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sessionId: session.id })
+        });
+        const insight = await res.json();
+        if (insight && (insight.source || insight.text)) {
+          document.getElementById('aiStripText').textContent = `[${insight.source || 'AI'}] ${insight.text || ''}`;
+        } else if (insight && insight.error) {
+          document.getElementById('aiStripText').textContent = `[提示] ${insight.error}`;
+        }
+        renderPod();
+      } catch (err) {
+        document.getElementById('aiStripText').textContent = `[接口请求失败] ${err.message}`;
+      }
+    }
+
+    function closePod() {
+      if (window.ypodDesktop?.closeWindow) window.ypodDesktop.closeWindow();
+      else window.close();
+    }
+
+    function escapeHtml(s) {
+      return String(s || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    }
+
+    init();
+  </script>
+</body>
+</html>

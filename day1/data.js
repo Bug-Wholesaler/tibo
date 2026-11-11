@@ -46,7 +46,16 @@ window.YTTRIUM_CONFIG = {
       winnerName: "",
       winnerImage: ""
     },
-    { day: 2,  status: "auto", title: "Day 02：待解锁更新", desc: "欢迎在下方留言板或小红书评论区留下离谱痛点蹲奶茶", githubUrl: "", downloadUrl: "", winnerName: "", winnerImage: "" },
+    {
+      day: 2,
+      status: "done",
+      title: "Day 02：手搓 YPod 桌面悬浮监工舱，切出去摸鱼也不慌",
+      desc: "置顶挂在屏幕角落盯 Coding Agent 干活的小胶囊：实时看 Token 消耗、首字耗时与模型剩余额度，点开直接看红绿 Diff 和死循环提醒。",
+      githubUrl: "https://github.com/Bug-Wholesaler/yttrium/tree/main/day2",
+      downloadUrl: "https://github.com/Bug-Wholesaler/yttrium/archive/refs/heads/main.zip",
+      winnerName: "",
+      winnerImage: ""
+    },
     { day: 3,  status: "auto", title: "Day 03：待解锁更新", desc: "欢迎在下方留言板或小红书评论区留下离谱痛点蹲奶茶", githubUrl: "", downloadUrl: "", winnerName: "", winnerImage: "" },
     { day: 4,  status: "auto", title: "Day 04：待解锁更新", desc: "", githubUrl: "", downloadUrl: "", winnerName: "", winnerImage: "" },
     { day: 5,  status: "auto", title: "Day 05：待解锁更新", desc: "", githubUrl: "", downloadUrl: "", winnerName: "", winnerImage: "" },

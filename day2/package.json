@@ -1,0 +1,51 @@
+{
+  "name": "ypod",
+  "version": "1.0.0",
+  "description": "YPod - 跨平台 Coding Agent (Antigravity / Codex / Cursor / Claude) 桌面置顶监工悬浮舱",
+  "main": "main.js",
+  "bin": {
+    "ypod": "./bin/ypod.js"
+  },
+  "scripts": {
+    "start": "electron .",
+    "server": "node src/server.js",
+    "test": "node --test test/session.test.js",
+    "shortcut": "node scripts/create-desktop-app.js --shortcut",
+    "dist": "node scripts/create-desktop-app.js --portable"
+  },
+  "build": {
+    "appId": "com.yttrium.ypod",
+    "productName": "YPod",
+    "files": [
+      "main.js",
+      "preload.js",
+      "src/**/*",
+      "ui/**/*",
+      "bin/**/*",
+      "build/**/*"
+    ],
+    "asarUnpack": [
+      "src/hook-bridge.js"
+    ],
+    "win": {
+      "target": [
+        "portable",
+        "nsis"
+      ],
+      "icon": "build/icon.ico"
+    }
+  },
+  "keywords": [
+    "ypod",
+    "agent",
+    "supervisor",
+    "antigravity",
+    "codex",
+    "hooks",
+    "electron"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^45.2.3"
+  }
+}
