@@ -61,71 +61,6 @@
       padding: 24px 16px 48px;
     }
 
-    /* 仅在本地或 ?admin=1 时显示的博主截图辅助栏 */
-    .author-toolbar {
-      width: 100%;
-      max-width: 820px;
-      background: rgba(255, 255, 255, 0.92);
-      border: 1px solid var(--card-border);
-      border-radius: 12px;
-      padding: 8px 14px;
-      margin-bottom: 16px;
-      display: none;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 8px;
-      box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04);
-      backdrop-filter: blur(8px);
-      font-size: 12px;
-    }
-
-    .author-toolbar.visible {
-      display: flex;
-    }
-
-    .toolbar-group {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .author-badge {
-      background: #0f172a;
-      color: #ffffff;
-      font-family: var(--font-mono);
-      font-size: 11px;
-      font-weight: 700;
-      padding: 3px 8px;
-      border-radius: 6px;
-    }
-
-    .btn-tool {
-      background: #f8fafc;
-      border: 1px solid var(--card-border);
-      color: var(--text-secondary);
-      padding: 5px 10px;
-      border-radius: 8px;
-      font-size: 12px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.18s ease;
-    }
-
-    .btn-tool:hover {
-      background: #f1f5f9;
-      color: var(--text-main);
-      border-color: #cbd5e1;
-    }
-
-    .btn-tool.active {
-      background: var(--green-bg);
-      border-color: var(--green-main);
-      color: var(--green-dark);
-      font-weight: 600;
-    }
-
     /* 主卡片容器 */
     .canvas-container {
       width: 100%;
@@ -136,36 +71,6 @@
       padding: 32px 28px;
       box-shadow: 0 12px 36px -8px rgba(15, 23, 42, 0.07), 0 2px 6px rgba(15, 23, 42, 0.03);
       transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-    }
-
-    /* 小红书 3:4 与 4:3 黄金截图比例支持 */
-    body.mode-crop-34 .canvas-container {
-      max-width: 640px;
-      aspect-ratio: 3 / 4;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      padding: 28px 24px;
-      box-shadow: 0 0 0 100vmax rgba(15, 23, 42, 0.55), 0 24px 48px rgba(15, 23, 42, 0.25);
-      z-index: 100;
-    }
-
-    body.mode-crop-43 .canvas-container {
-      max-width: 820px;
-      aspect-ratio: 4 / 3;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      padding: 26px 24px;
-      box-shadow: 0 0 0 100vmax rgba(15, 23, 42, 0.55), 0 24px 48px rgba(15, 23, 42, 0.25);
-      z-index: 100;
-    }
-
-    body.mode-clean .author-toolbar,
-    body.mode-clean .board-container,
-    body.mode-crop-34 .board-container,
-    body.mode-crop-43 .board-container {
-      display: none !important;
     }
 
     /* 留言板区（清爽亮色卡片） */
@@ -981,43 +886,9 @@
       box-shadow: 0 10px 25px rgba(15, 23, 42, 0.25);
       z-index: 2000;
     }
-
-    /* 纯净模式退出浮标 */
-    .exit-clean-pill {
-      display: none;
-      position: fixed;
-      top: 14px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(15, 23, 42, 0.85);
-      color: #fff;
-      padding: 6px 14px;
-      border-radius: 99px;
-      font-size: 12px;
-      cursor: pointer;
-      z-index: 9999;
-    }
   </style>
 </head>
 <body>
-
-  <!-- 本地调试工具栏 -->
-  <div class="author-toolbar" id="authorToolbar">
-    <div class="toolbar-group">
-      <span class="author-badge">🛠️ 本地调试面板</span>
-    </div>
-    <div class="toolbar-group">
-      <button class="btn-tool" id="btnLiveDemo" onclick="toggleLiveDemoMode()">🎬 点亮动效测试: 关</button>
-      <button class="btn-tool" onclick="previewWinnerModal()">🧋 弹窗测试</button>
-      <button class="btn-tool" id="btnRatio" onclick="cycleRatio()">📐 比例: 自适应</button>
-      <button class="btn-tool" onclick="toggleCleanMode()">📸 纯净视图</button>
-    </div>
-  </div>
-
-  <!-- 纯净截图模式退出提示 -->
-  <div class="exit-clean-pill" id="exitCleanPill" onclick="toggleCleanMode()">
-    📸 正在纯净截图模式 · 点击此处或按 ESC 退出
-  </div>
 
   <!-- 主体监控台白色大卡片 -->
   <div class="canvas-container">
@@ -1108,7 +979,7 @@
       </div>
     </div>
 
-    <!-- 底部悬念组件（图3特写道具） -->
+      <!-- 底部断更提示条 -->
     <button class="reset-banner-btn state-locked" id="btnBottomReset" onclick="handleBottomResetClick()">
       <span id="bottomResetIcon">🔒</span>
       <span id="bottomResetText">触发断更 Reset：随机抽取评论区奶茶锦鲤（仅断更日解锁）</span>
@@ -1175,7 +1046,7 @@
         <button class="btn-close" onclick="closeModal('winnerModal')">×</button>
       </div>
       <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.5;" id="winModalDesc">
-        当日未能按时交出更新，已触发 Reset 惩罚！以下为从评论区痛点池随机抽中的奶茶锦鲤截图：
+        当日未能按时交出更新，已触发 Reset 惩罚！以下为从评论区与留言板随机抽中的奶茶锦鲤截图：
       </p>
       <div class="winner-img-box">
         <img id="winModalImg" src="./images/sample-winner.svg" alt="评论区中奖用户截图">
@@ -1202,16 +1073,6 @@
     };
 
     let selectedDayNum = 1;
-    let isLiveDemoMode = false; // 仅用于博主本地拍 Live 图时点击点亮格子
-
-    // 判断是否为本地环境或 ?admin=1（决定是否展示顶部博主截图工具栏）
-    function checkAuthorEnv() {
-      const isLocal = location.protocol === "file:" || location.hostname === "localhost" || location.hostname === "127.0.0.1";
-      const hasAdminParam = new URLSearchParams(location.search).get("admin") === "1";
-      if (isLocal || hasAdminParam) {
-        document.getElementById("authorToolbar").classList.add("visible");
-      }
-    }
 
     // 获取当前真实北京时间 (UTC+8) 的 Date 对象与 YYYY-MM-DD
     function getBeijingNow() {
@@ -1367,16 +1228,6 @@
 
     // 处理格子点击
     function handleCellClick(item, finalStatus, cellElem) {
-      // 如果博主开启了「Live图点亮演示模式」，点击格子演示从灰变绿的动效方便拍实况
-      if (isLiveDemoMode) {
-        item.status = item.status === "done" ? "auto" : "done";
-        selectedDayNum = item.day;
-        renderAll();
-        const newCell = document.getElementById("matrixGrid").children[item.day - 1];
-        if (newCell) newCell.classList.add("cell-pop");
-        return;
-      }
-
       const dayStr = String(item.day).padStart(2, "0");
       const mdStr = formatDateMD(getDayDateObj(item.day));
 
@@ -1512,15 +1363,6 @@
       document.getElementById("winnerModal").classList.add("open");
     }
 
-    function previewWinnerModal() {
-      openWinnerModal({
-        day: 3,
-        desc: "【预览效果】当某天触发断更 Reset 时，访客点击该格子将弹出你放入 day1/images/ 的中奖用户截图：",
-        winnerName: "@某蹲奶茶的幸运读者",
-        winnerImage: "./images/sample-winner.svg"
-      });
-    }
-
     function handleBottomResetClick() {
       const firstReset = config.days.find((d) => resolveDayStatus(d) === "reset");
       if (firstReset) {
@@ -1532,47 +1374,6 @@
 
     function closeModal(id) {
       document.getElementById(id).classList.remove("open");
-    }
-
-    // 博主工具栏功能：Live 图点亮演示开关
-    function toggleLiveDemoMode() {
-      isLiveDemoMode = !isLiveDemoMode;
-      const btn = document.getElementById("btnLiveDemo");
-      if (isLiveDemoMode) {
-        btn.classList.add("active");
-        btn.textContent = "🎬 Live图点亮演示: 开 (点击任意格子体验点亮)";
-        showToast("已开启 Live 演示模式：点击任意格子可拍摄 3 秒变绿点亮动效");
-      } else {
-        btn.classList.remove("active");
-        btn.textContent = "🎬 Live图点亮演示: 关";
-        location.reload();
-      }
-    }
-
-    // 比例切换
-    let ratioIdx = 0;
-    const ratios = ["default", "34", "43"];
-    function cycleRatio() {
-      ratioIdx = (ratioIdx + 1) % ratios.length;
-      document.body.classList.remove("mode-crop-34", "mode-crop-43");
-      const btn = document.getElementById("btnRatio");
-      if (ratios[ratioIdx] === "34") {
-        document.body.classList.add("mode-crop-34");
-        btn.textContent = "📐 比例: 3:4 (小红书首图)";
-      } else if (ratios[ratioIdx] === "43") {
-        document.body.classList.add("mode-crop-43");
-        btn.textContent = "📐 比例: 4:3 (横版尾图)";
-      } else {
-        btn.textContent = "📐 比例: 自适应";
-      }
-    }
-
-    // 纯净截图模式
-    let isClean = false;
-    function toggleCleanMode() {
-      isClean = !isClean;
-      document.body.classList.toggle("mode-clean", isClean);
-      document.getElementById("exitCleanPill").style.display = isClean ? "block" : "none";
     }
 
     let toastTimer = null;
@@ -1588,7 +1389,6 @@
 
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape") {
-        if (isClean) toggleCleanMode();
         closeModal("projectModal");
         closeModal("winnerModal");
       }
@@ -1773,7 +1573,6 @@
       fetchCloudBoardMessages();
     }
 
-    checkAuthorEnv();
     updateClock();
     setInterval(updateClock, 1000);
     renderAll();

@@ -42,7 +42,7 @@ window.YTTRIUM_CONFIG = {
       title: "Day 01：手搓本护茶监控台网站，卡Bug保住第一杯奶茶",
       desc: "纯前端清爽亮色监控面板，对接真实日历时间，支持作品跳转、实时留言许愿与断更锦鲤公示。",
       githubUrl: "https://github.com/Bug-Wholesaler/yttrium/tree/main/day1",
-      downloadUrl: "./index.html",
+      downloadUrl: "https://yttrium-28days.pages.dev/",
       winnerName: "",
       winnerImage: ""
     },
