@@ -1,0 +1,10 @@
+{
+  "name": "course-hub-extension",
+  "version": "1.0.0",
+  "private": true,
+  "description": "学堂 × 雨课堂 双平台全屏覆盖合一工作台（Chrome / Edge Manifest V3 扩展）",
+  "scripts": {
+    "test": "node --test test/core.test.js",
+    "pack": "powershell -ExecutionPolicy Bypass -File scripts/pack-release.ps1"
+  }
+}

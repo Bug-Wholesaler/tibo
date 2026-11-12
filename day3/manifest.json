@@ -1,0 +1,77 @@
+{
+  "manifest_version": 3,
+  "name": "学堂 × 雨课堂 合一工作台",
+  "short_name": "课程工作台",
+  "version": "1.0.0",
+  "description": "将网络学堂与雨课堂合二为一的全屏覆盖式课程看板：自动对齐同名课程、汇总跨平台 DDL 倒计时、课件文件与未读公告，一键直达对应页面。",
+  "permissions": [
+    "storage",
+    "tabs",
+    "cookies"
+  ],
+  "host_permissions": [
+    "https://*.yuketang.cn/*",
+    "https://*/f/wlxt/*",
+    "https://*/b/wlxt/*",
+    "https://*/b/kc/*",
+    "https://*/upload_files/*",
+    "https://*/res/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*.yuketang.cn/*",
+        "https://*/f/wlxt/*"
+      ],
+      "js": [
+        "core.js",
+        "content.js"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://*.yuketang.cn/*",
+        "https://*/f/wlxt/*",
+        "https://*/b/wlxt/*",
+        "https://*/res/*"
+      ],
+      "js": [
+        "player-rate-core.js"
+      ],
+      "all_frames": true,
+      "world": "MAIN",
+      "run_at": "document_start"
+    },
+    {
+      "matches": [
+        "https://*.yuketang.cn/*",
+        "https://*/f/wlxt/*",
+        "https://*/b/wlxt/*",
+        "https://*/res/*"
+      ],
+      "js": [
+        "player-enhancer.js"
+      ],
+      "all_frames": true,
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "学堂 × 雨课堂 合一工作台",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

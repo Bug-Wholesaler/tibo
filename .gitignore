@@ -21,4 +21,6 @@ Thumbs.db
 /README.md
 **/.dev-preview/
 **/.local-pro/
-/day3/
+!day3/dist/
+day3/dist/*
+!day3/dist/course-hub-extension.zip

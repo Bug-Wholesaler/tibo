@@ -56,8 +56,17 @@ window.YTTRIUM_CONFIG = {
       winnerName: "",
       winnerImage: ""
     },
-    { day: 3,  status: "auto", title: "Day 03：待解锁更新", desc: "欢迎在下方留言板或小红书评论区留下离谱痛点蹲奶茶", githubUrl: "", downloadUrl: "", winnerName: "", winnerImage: "" },
-    { day: 4,  status: "auto", title: "Day 04：待解锁更新", desc: "", githubUrl: "", downloadUrl: "", winnerName: "", winnerImage: "" },
+    {
+      day: 3,
+      status: "done",
+      title: "Day 03：手搓「学堂 × 雨课堂 合一工作台」，告别来回切网页找 DDL",
+      desc: "把两个平台焊成同一个清爽双栏看板的浏览器插件：同名课自动合体、跨端 DDL 倒计时、正在直播置顶与课堂回放 0.5x~16x 倍速画中画。",
+      githubUrl: "https://github.com/Bug-Wholesaler/yttrium/tree/main/day3",
+      downloadUrl: "https://github.com/Bug-Wholesaler/yttrium/raw/main/day3/dist/course-hub-extension.zip",
+      winnerName: "",
+      winnerImage: ""
+    },
+    { day: 4,  status: "auto", title: "Day 04：待解锁更新", desc: "欢迎在下方留言板或小红书评论区留下离谱痛点蹲奶茶", githubUrl: "", downloadUrl: "", winnerName: "", winnerImage: "" },
     { day: 5,  status: "auto", title: "Day 05：待解锁更新", desc: "", githubUrl: "", downloadUrl: "", winnerName: "", winnerImage: "" },
     { day: 6,  status: "auto", title: "Day 06：待解锁更新", desc: "", githubUrl: "", downloadUrl: "", winnerName: "", winnerImage: "" },
     { day: 7,  status: "auto", title: "Day 07：待解锁更新", desc: "", githubUrl: "", downloadUrl: "", winnerName: "", winnerImage: "" },
