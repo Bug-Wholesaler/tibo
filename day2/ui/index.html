@@ -151,6 +151,11 @@
       color: #fbbf24;
       border-color: rgba(245, 158, 11, 0.45);
     }
+    .agent-pill.kimi {
+      background: rgba(236, 72, 153, 0.18);
+      color: #f472b6;
+      border-color: rgba(236, 72, 153, 0.46);
+    }
     .agent-pill.cursor {
       background: rgba(168, 85, 247, 0.18);
       color: #d8b4fe;
@@ -506,6 +511,10 @@
       background: rgba(245, 158, 11, 0.2);
       color: #fbbf24;
     }
+    .plat-tag.kimi {
+      background: rgba(236, 72, 153, 0.2);
+      color: #f472b6;
+    }
     .plat-tag.cursor {
       background: rgba(168, 85, 247, 0.2);
       color: #d8b4fe;
@@ -543,13 +552,113 @@
       display: none !important;
     }
 
+    /* Top Agent Filter Capsules */
+    .agent-filter-bar {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin-top: 8px;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .agent-filter-bar::-webkit-scrollbar {
+      display: none;
+    }
+    .agent-filter-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+      font-family: inherit;
+      background: rgba(15, 23, 42, 0.65);
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      color: #94a3b8;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s ease;
+    }
+    .agent-filter-chip:hover {
+      color: #f1f5f9;
+      border-color: rgba(148, 163, 184, 0.38);
+      background: rgba(30, 41, 59, 0.78);
+    }
+    .agent-filter-chip.active {
+      background: rgba(56, 189, 248, 0.18);
+      color: #7dd3fc;
+      border-color: rgba(56, 189, 248, 0.5);
+      box-shadow: 0 0 8px rgba(56, 189, 248, 0.16);
+    }
+    .agent-filter-chip[data-agent="codex"].active {
+      background: rgba(16, 185, 129, 0.18);
+      color: #6ee7b7;
+      border-color: rgba(16, 185, 129, 0.5);
+      box-shadow: 0 0 8px rgba(16, 185, 129, 0.16);
+    }
+    .agent-filter-chip[data-agent="claude"].active {
+      background: rgba(245, 158, 11, 0.2);
+      color: #fcd34d;
+      border-color: rgba(245, 158, 11, 0.5);
+      box-shadow: 0 0 8px rgba(245, 158, 11, 0.16);
+    }
+    .agent-filter-chip[data-agent="kimi"].active {
+      background: rgba(236, 72, 153, 0.2);
+      color: #f9a8d4;
+      border-color: rgba(236, 72, 153, 0.52);
+      box-shadow: 0 0 8px rgba(236, 72, 153, 0.18);
+    }
+    .filter-chip-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .filter-chip-count {
+      font-family: Consolas, monospace;
+      font-size: 9px;
+      opacity: 0.85;
+      padding: 0 4px;
+      border-radius: 999px;
+      background: rgba(0, 0, 0, 0.28);
+    }
+    .hook-copy-row {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 5px;
+      padding-top: 4px;
+      border-top: 1px solid rgba(56, 189, 248, 0.1);
+      font-size: 9.5px;
+      color: #94a3b8;
+    }
+    .hook-copy-chip {
+      padding: 2px 7px;
+      border-radius: 6px;
+      font-size: 9.5px;
+      font-weight: 600;
+      font-family: inherit;
+      background: rgba(30, 41, 59, 0.78);
+      border: 1px solid rgba(148, 163, 184, 0.22);
+      color: #cbd5e1;
+      cursor: pointer;
+      transition: all 0.14s ease;
+    }
+    .hook-copy-chip:hover {
+      background: rgba(56, 189, 248, 0.18);
+      color: #ffffff;
+      border-color: rgba(56, 189, 248, 0.45);
+    }
+
     /* Current Supervised Target Identity Banner */
     .target-identity-bar {
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 8px;
-      margin-top: 8px;
+      margin-top: 2px;
       padding: 5px 10px;
       border-radius: 10px;
       background: rgba(15, 23, 42, 0.65);
@@ -1324,6 +1433,7 @@
     body.theme-obsidian .token-hero-card,
     body.theme-obsidian .radar-box,
     body.theme-obsidian .target-identity-bar,
+    body.theme-obsidian .agent-filter-chip:not(.active),
     body.theme-obsidian .session-picker,
     body.theme-obsidian .theme-picker-drawer {
       background: #111114 !important;
@@ -1354,6 +1464,7 @@
     body.theme-neon .token-hero-card,
     body.theme-neon .radar-box,
     body.theme-neon .target-identity-bar,
+    body.theme-neon .agent-filter-chip:not(.active),
     body.theme-neon .session-picker,
     body.theme-neon .theme-picker-drawer {
       background: rgba(28, 12, 50, 0.88) !important;
@@ -1384,6 +1495,7 @@
     body.theme-titanium .token-hero-card,
     body.theme-titanium .radar-box,
     body.theme-titanium .target-identity-bar,
+    body.theme-titanium .agent-filter-chip:not(.active),
     body.theme-titanium .session-picker,
     body.theme-titanium .theme-picker-drawer {
       background: #171a22 !important;
@@ -1711,6 +1823,206 @@
       0%, 100% { opacity: 0.68; filter: brightness(0.95); }
       50% { opacity: 1; filter: brightness(1.25); }
     }
+
+    /* ==================== SUBAGENT / SWARM FOLDING & DRAWER ==================== */
+    .swarm-micro-pill {
+      display: none;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 7px;
+      border-radius: 999px;
+      font-size: 9.5px;
+      font-weight: 800;
+      background: rgba(245, 158, 11, 0.16);
+      color: #fcd34d;
+      border: 1px solid rgba(245, 158, 11, 0.44);
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+      transition: all 0.15s ease;
+    }
+    .swarm-micro-pill:hover,
+    .swarm-micro-pill.open {
+      background: rgba(245, 158, 11, 0.28);
+      border-color: rgba(251, 191, 36, 0.72);
+      color: #fef3c7;
+    }
+    .swarm-micro-pill.cap-compact {
+      padding: 1.5px 6px;
+      font-size: 9px;
+    }
+    .swarm-live-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 6px #10b981;
+      animation: swarmPulse 1.4s ease-in-out infinite;
+      flex-shrink: 0;
+    }
+    @keyframes swarmPulse {
+      0%, 100% { transform: scale(0.9); opacity: 0.75; }
+      50% { transform: scale(1.22); opacity: 1; }
+    }
+
+    .subagent-drawer {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      padding: 7px 9px;
+      border-radius: 11px;
+      background: rgba(15, 23, 42, 0.84);
+      border: 1px solid rgba(245, 158, 11, 0.34);
+      max-height: 175px;
+      overflow-y: auto;
+    }
+    .subagent-drawer.show {
+      display: flex;
+    }
+    .subagent-drawer-hdr {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 10px;
+      font-weight: 700;
+      color: #fcd34d;
+    }
+    .subagent-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 5px 8px;
+      border-radius: 8px;
+      background: rgba(30, 41, 59, 0.65);
+      border: 1px solid rgba(148, 163, 184, 0.16);
+      font-size: 10px;
+      cursor: pointer;
+      transition: all 0.14s ease;
+    }
+    .subagent-row:hover {
+      border-color: rgba(56, 189, 248, 0.48);
+      background: rgba(30, 41, 59, 0.92);
+    }
+    .subagent-row.active {
+      border-color: #fbbf24;
+      background: rgba(245, 158, 11, 0.16);
+    }
+    .subagent-row-left {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      min-width: 0;
+      flex: 1;
+    }
+    .subagent-role-name {
+      font-family: Consolas, monospace;
+      font-weight: 800;
+      color: #f8fafc;
+      white-space: nowrap;
+    }
+    .subagent-kind-tag {
+      font-size: 8.5px;
+      padding: 0.5px 4px;
+      border-radius: 4px;
+      background: rgba(56, 189, 248, 0.16);
+      color: #7dd3fc;
+      white-space: nowrap;
+    }
+    .subagent-state-tag {
+      font-size: 9px;
+      font-weight: 700;
+      padding: 0.5px 5px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+    .subagent-state-tag.working {
+      background: rgba(16, 185, 129, 0.2);
+      color: #6ee7b7;
+    }
+    .subagent-state-tag.waiting {
+      background: rgba(168, 85, 247, 0.2);
+      color: #d8b4fe;
+    }
+    .subagent-state-tag.idle,
+    .subagent-state-tag.killed {
+      background: rgba(148, 163, 184, 0.16);
+      color: #94a3b8;
+    }
+    .subagent-row-right {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: Consolas, monospace;
+      font-size: 9.5px;
+      color: #cbd5e1;
+      flex-shrink: 0;
+    }
+
+    .subagent-return-bar {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 6px 10px;
+      border-radius: 10px;
+      background: linear-gradient(90deg, rgba(245, 158, 11, 0.22), rgba(56, 189, 248, 0.18));
+      border: 1px solid rgba(251, 191, 36, 0.55);
+      font-size: 10.5px;
+      color: #fef3c7;
+    }
+    .subagent-return-bar.show {
+      display: flex;
+    }
+    .subagent-return-btn {
+      padding: 3px 9px;
+      border-radius: 999px;
+      border: 1px solid rgba(251, 191, 36, 0.7);
+      background: rgba(245, 158, 11, 0.28);
+      color: #ffffff;
+      font-size: 10px;
+      font-weight: 800;
+      font-family: inherit;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .subagent-return-btn:hover {
+      background: #f59e0b;
+      color: #0f172a;
+    }
+
+    body.theme-titanium .swarm-micro-pill {
+      background: rgba(217, 119, 6, 0.12);
+      color: #b45309;
+      border-color: rgba(217, 119, 6, 0.38);
+    }
+    body.theme-titanium .subagent-drawer {
+      background: rgba(248, 250, 252, 0.96);
+      border-color: rgba(217, 119, 6, 0.35);
+    }
+    body.theme-titanium .subagent-drawer-hdr {
+      color: #b45309;
+    }
+    body.theme-titanium .subagent-row {
+      background: #ffffff;
+      border-color: rgba(148, 163, 184, 0.35);
+    }
+    body.theme-titanium .subagent-role-name {
+      color: #0f172a;
+    }
+    body.theme-titanium .subagent-row-right {
+      color: #475569;
+    }
+    body.theme-titanium .subagent-return-bar {
+      background: rgba(254, 243, 199, 0.95);
+      border-color: rgba(217, 119, 6, 0.48);
+      color: #92400e;
+    }
+    body.theme-titanium .subagent-return-btn {
+      background: #d97706;
+      color: #ffffff;
+    }
   </style>
 </head>
 <body class="mode-cockpit">
@@ -1737,6 +2049,8 @@
               <span class="agent-pill-label" id="agentBadgeText">AGY · ypod</span>
               <span style="opacity:0.75;font-size:9px;">▾</span>
             </div>
+
+            <button type="button" class="swarm-micro-pill cap-compact" id="capSwarmPill" onclick="event.stopPropagation(); toggleSubagentDrawer(true)" title="点击展开查看当前会话的子代理 / Swarm 编队状态"></button>
 
             <div class="capsule-token-pill" onclick="switchTab('token')" title="点击查看算力与配额详情">
               ⚡ <span id="capTokSpeed">0.0</span> tok/s · <span id="capTokTotal">0</span><span id="capTokQuota" style="margin-left:4px;padding:1px 4px;border-radius:3px;font-size:8.5px;background:rgba(56,189,248,0.18);color:#7dd3fc;display:none;">余96%</span>
@@ -1816,14 +2130,45 @@
       <!-- ==================== AGENT SESSION PICKER DRAWER ==================== -->
       <div class="session-picker" id="sessionPicker">
         <div class="picker-header">
-          <span>🎯 选择最近两小时活跃的对话</span>
-          <span style="cursor:pointer;color:#38bdf8;" onclick="toggleSessionPicker()">收起 ▴</span>
+          <span>🎯 选择最近两小时活跃的主对话</span>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <button type="button" id="btnToggleOrphanSubagents" style="display:none;background:rgba(245,158,11,0.16);border:1px solid rgba(245,158,11,0.4);color:#fcd34d;border-radius:999px;padding:1px 7px;font-size:9.5px;font-weight:700;cursor:pointer;" onclick="toggleShowOrphanSubagents()">🐝 显示子代理</button>
+            <span style="cursor:pointer;color:#38bdf8;" onclick="toggleSessionPicker()">收起 ▴</span>
+          </div>
         </div>
         <div id="sessionPickerList" style="display:flex;flex-direction:column;gap:5px;"></div>
       </div>
 
       <!-- ==================== 2. MULTI-PAGE COCKPIT BODY ==================== -->
       <div class="cockpit-body" id="cockpitBody">
+        <!-- Top Agent Filter Capsules -->
+        <div class="agent-filter-bar" id="agentFilterBar" aria-label="按平台筛选会话">
+          <button type="button" class="agent-filter-chip active" data-agent="all" onclick="setAgentFilter('all')">
+            <span>全部</span>
+            <span class="filter-chip-count" id="filterCnt-all">0</span>
+          </button>
+          <button type="button" class="agent-filter-chip" data-agent="agy" onclick="setAgentFilter('agy')" title="筛选 Antigravity 会话">
+            <span class="filter-chip-dot" style="background:#38bdf8;"></span>
+            <span>Antigravity</span>
+            <span class="filter-chip-count" id="filterCnt-agy">0</span>
+          </button>
+          <button type="button" class="agent-filter-chip" data-agent="codex" onclick="setAgentFilter('codex')" title="筛选 OpenAI Codex 会话">
+            <span class="filter-chip-dot" style="background:#10b981;"></span>
+            <span>Codex</span>
+            <span class="filter-chip-count" id="filterCnt-codex">0</span>
+          </button>
+          <button type="button" class="agent-filter-chip" data-agent="claude" onclick="setAgentFilter('claude')" title="筛选 Claude Code 会话">
+            <span class="filter-chip-dot" style="background:#f59e0b;"></span>
+            <span>Claude Code</span>
+            <span class="filter-chip-count" id="filterCnt-claude">0</span>
+          </button>
+          <button type="button" class="agent-filter-chip" data-agent="kimi" onclick="setAgentFilter('kimi')" title="筛选 Kimi Code (~/.kimi-code / ~/.kimi) 会话">
+            <span class="filter-chip-dot" style="background:#ec4899;"></span>
+            <span>Kimi Code</span>
+            <span class="filter-chip-count" id="filterCnt-kimi">0</span>
+          </button>
+        </div>
+
         <!-- Clear Identity Bar showing exactly WHICH Agent, Project, and Task is being supervised -->
         <div class="target-identity-bar" onclick="toggleSessionPicker()" title="点击切换监工目标">
           <div style="display:flex;align-items:center;gap:6px;min-width:0;flex:1;">
@@ -1832,7 +2177,25 @@
             <span style="color:#64748b;">·</span>
             <span style="color:#cbd5e1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" id="idBarTopic">开发 Agent 实时 AI 监工悬浮舱</span>
           </div>
-          <span style="color:#38bdf8;font-size:10px;font-weight:700;flex-shrink:0;" id="idBarSwitchHint">切换目标 (5) ▾</span>
+          <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+            <button type="button" class="swarm-micro-pill" id="idBarSwarmPill" onclick="event.stopPropagation(); toggleSubagentDrawer()" title="点击原地展开/收起子代理列表"></button>
+            <span style="color:#38bdf8;font-size:10px;font-weight:700;" id="idBarSwitchHint">切换目标 (5) ▾</span>
+          </div>
+        </div>
+
+        <!-- In-Place Expandable Subagent / Swarm Worker Status List -->
+        <div class="subagent-drawer" id="subagentDrawer">
+          <div class="subagent-drawer-hdr">
+            <span id="subagentDrawerTitle">🐝 子代理协同状态</span>
+            <span style="cursor:pointer;color:#38bdf8;font-weight:600;" onclick="toggleSubagentDrawer()">收起 ▴</span>
+          </div>
+          <div id="subagentDrawerList" style="display:flex;flex-direction:column;gap:4px;"></div>
+        </div>
+
+        <!-- Prominent Return-to-Parent Banner when temporarily inspecting a Subagent -->
+        <div class="subagent-return-bar" id="subagentReturnBar">
+          <div style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" id="subagentReturnText">🐝 正在临时查看子代理步骤与 Diff</div>
+          <button type="button" class="subagent-return-btn" id="btnReturnMainSession" onclick="exitSubagentView()">↩ 返回主对话</button>
         </div>
 
         <!-- Global High-Risk Hook Interception Alert -->
@@ -1990,7 +2353,7 @@
             <!-- Platform Rate Limit / Rolling Usage Bar -->
             <div class="quota-bar-wrap" id="quotaRateLimitWrap">
               <div class="quota-bar-labels">
-                <span id="quotaRateLimitLabel">5小时限流额度已用</span>
+                <span id="quotaRateLimitLabel">可用配额水位</span>
                 <span id="quotaRateLimitVal" style="font-family:Consolas,monospace;font-weight:700;color:#6ee7b7;">—</span>
               </div>
               <div class="quota-bar-track">
@@ -2076,7 +2439,7 @@
           </div>
 
           <div class="ai-local-hint show" id="aiLocalOnlyHint">
-            💡 当前为 <b>纯本地零配置模式</b>：阶段追踪、Token 计费、并发冲突、高危拦截与时空回放均由内置引擎实时驱动，无需填写 API。如需外部大模型深度总结，请点击上方 <b>🛠️ 自由配置</b> 或厂商预设。
+            💡 当前为 <b>纯本地零配置模式</b>：自动扫描监听 <b>Antigravity / Codex / Claude Code / Kimi Code</b> 本地会话，阶段追踪、迷你 Diff、Token 与首字响应 (TTFT)、配额水位与并发冲突均由内置引擎实时驱动，无需填写 API。
           </div>
 
           <div class="ai-fields-wrap" id="aiFieldsWrap">
@@ -2104,9 +2467,17 @@
             </div>
             <div style="display:flex;align-items:center;justify-content:space-between;">
               <label style="display:flex;align-items:center;gap:5px;cursor:pointer;">
-                <input type="checkbox" id="chkIntercept" checked /> 🛡️ 开启 PreToolUse 高危动作挂起拦截 (支持 AGY / Codex / CC)
+                <input type="checkbox" id="chkIntercept" checked /> 🛡️ 开启 PreToolUse 高危动作挂起拦截 (支持 AGY / Codex / CC / Kimi)
               </label>
               <span id="saveStatusText" style="color:#10b981;font-weight:700;"></span>
+            </div>
+            <div class="hook-copy-row">
+              <span>📋 一键复制 Hook 配置片段:</span>
+              <button type="button" class="hook-copy-chip" onclick="copyHookSnippet('agy', 'Antigravity')">AGY</button>
+              <button type="button" class="hook-copy-chip" onclick="copyHookSnippet('codex', '~/.codex/config.toml')">Codex</button>
+              <button type="button" class="hook-copy-chip" onclick="copyHookSnippet('claude', '~/.claude/settings.json')">Claude</button>
+              <button type="button" class="hook-copy-chip" onclick="copyHookSnippet('kimi', '~/.kimi-code/config.toml')">Kimi Code</button>
+              <span id="hookCopyToast" style="color:#34d399;font-weight:700;margin-left:auto;"></span>
             </div>
           </div>
 
@@ -2135,10 +2506,16 @@
       activePreset: 'none',
       customDraft: { url: '', model: '' },
       filterImportantOnly: false,
+      agentFilter: 'all',
       sessions: [],
+      orphanSubagents: [],
       conflicts: [],
       activeSessionId: null,
+      activeSubagentId: null,
+      subagentDrawerOpen: false,
+      showOrphanSubagents: false,
       pendingIntercepts: [],
+      hookConfigs: {},
       goalDetailsExpanded: false,
       showAllSteps: false,
       openStepId: null,
@@ -2148,12 +2525,76 @@
       config: {}
     };
 
+    function normalizeAgentKey(agentType) {
+      const t = String(agentType || 'agy').toLowerCase();
+      if (t === 'cc') return 'claude';
+      if (t === 'kimi-code') return 'kimi';
+      return t;
+    }
+
     function getAgentDisplayMeta(agentType) {
-      const t = (agentType || 'agy').toLowerCase();
+      const t = normalizeAgentKey(agentType);
       if (t === 'codex') return { short: 'Codex', full: 'OpenAI Codex', cls: 'codex' };
-      if (t === 'claude' || t === 'cc') return { short: 'CC', full: 'Claude Code', cls: 'claude' };
+      if (t === 'claude') return { short: 'CC', full: 'Claude Code', cls: 'claude' };
+      if (t === 'kimi') return { short: 'Kimi', full: 'Kimi Code', cls: 'kimi' };
       if (t === 'cursor') return { short: 'Cursor', full: 'Cursor Agent', cls: 'cursor' };
       return { short: 'AGY', full: 'Antigravity', cls: 'agy' };
+    }
+
+    function getFilteredSessions() {
+      const f = state.agentFilter || 'all';
+      if (f === 'all') return state.sessions;
+      return state.sessions.filter((s) => normalizeAgentKey(s.agentType) === f);
+    }
+
+    function setAgentFilter(agentKey) {
+      state.agentFilter = agentKey || 'all';
+      state.activeSubagentId = null;
+      const filtered = getFilteredSessions();
+      if (filtered.length > 0 && !filtered.some((s) => s.id === state.activeSessionId)) {
+        state.activeSessionId = filtered[0].id;
+        state.subagentDrawerOpen = false;
+        state.showAllSteps = false;
+        state.openStepId = null;
+        state.scrubIndex = null;
+      }
+      renderPod();
+      setTimeout(syncWindowHeight, 20);
+    }
+
+    function renderAgentFilterBar() {
+      const counts = { all: state.sessions.length, agy: 0, codex: 0, claude: 0, kimi: 0 };
+      for (const s of state.sessions) {
+        const k = normalizeAgentKey(s.agentType);
+        if (counts[k] !== undefined) counts[k] += 1;
+      }
+      for (const [k, val] of Object.entries(counts)) {
+        const el = document.getElementById(`filterCnt-${k}`);
+        if (el) el.textContent = String(val);
+      }
+      document.querySelectorAll('#agentFilterBar .agent-filter-chip').forEach((btn) => {
+        btn.classList.toggle('active', btn.dataset.agent === (state.agentFilter || 'all'));
+      });
+    }
+
+    async function copyHookSnippet(agentKey, targetFileHint) {
+      const snippet = state.hookConfigs?.[agentKey] || '';
+      const toastEl = document.getElementById('hookCopyToast');
+      if (!snippet) {
+        if (toastEl) toastEl.textContent = '暂无配置片段';
+        return;
+      }
+      try {
+        await navigator.clipboard.writeText(snippet);
+        if (toastEl) {
+          toastEl.textContent = `已复制 ${targetFileHint}`;
+          setTimeout(() => {
+            if (toastEl.textContent === `已复制 ${targetFileHint}`) toastEl.textContent = '';
+          }, 2600);
+        }
+      } catch {
+        if (toastEl) toastEl.textContent = '复制失败';
+      }
     }
 
     function toggleImportantFilter() {
@@ -2456,12 +2897,74 @@
 
     function selectSessionById(id) {
       state.activeSessionId = id;
+      state.activeSubagentId = null;
+      state.subagentDrawerOpen = false;
       state.showAllSteps = false;
       state.openStepId = null;
       state.scrubIndex = null;
       state.pickerOpen = false;
       document.getElementById('sessionPicker').classList.remove('show');
       renderPod();
+      setTimeout(syncWindowHeight, 20);
+    }
+
+    function formatDurationSec(sec) {
+      const sNum = Math.max(0, Math.round(Number(sec || 0)));
+      if (sNum <= 0) return '<1s';
+      if (sNum < 60) return `${sNum}s`;
+      const m = Math.floor(sNum / 60);
+      const remS = sNum % 60;
+      if (m < 60) return remS > 0 ? `${m}m${remS}s` : `${m}m`;
+      const h = Math.floor(m / 60);
+      return `${h}h${m % 60}m`;
+    }
+
+    function getSubagentStatusBadge(sub) {
+      const rs = sub?.subagentRunState || (sub?.status === 'WORKING' ? 'working' : 'idle');
+      if (rs === 'working') return { cls: 'working', text: '🟢 运行中' };
+      if (rs === 'waiting') return { cls: 'waiting', text: '🟣 待命' };
+      if (rs === 'killed') return { cls: 'killed', text: '⚪ 已结束' };
+      return { cls: 'idle', text: '🔵 已完成' };
+    }
+
+    function toggleSubagentDrawer(expandCockpit = false) {
+      if (expandCockpit && state.mode === 'capsule') {
+        state.mode = 'cockpit';
+        applyBodyClasses();
+        const expBtn = document.getElementById('btnExpand');
+        if (expBtn) expBtn.textContent = '▴';
+        state.subagentDrawerOpen = true;
+      } else {
+        state.subagentDrawerOpen = !state.subagentDrawerOpen;
+      }
+      renderPod();
+      setTimeout(syncWindowHeight, 20);
+    }
+
+    function inspectSubagent(subId) {
+      if (!subId) return;
+      state.activeSubagentId = subId;
+      state.showAllSteps = false;
+      state.openStepId = null;
+      state.scrubIndex = null;
+      state.pickerOpen = false;
+      document.getElementById('sessionPicker')?.classList.remove('show');
+      renderPod();
+      setTimeout(syncWindowHeight, 20);
+    }
+
+    function exitSubagentView() {
+      state.activeSubagentId = null;
+      state.showAllSteps = false;
+      state.openStepId = null;
+      state.scrubIndex = null;
+      renderPod();
+      setTimeout(syncWindowHeight, 20);
+    }
+
+    function toggleShowOrphanSubagents() {
+      state.showOrphanSubagents = !state.showOrphanSubagents;
+      renderSessionPickerList();
       setTimeout(syncWindowHeight, 20);
     }
 
@@ -2533,7 +3036,8 @@
 
     function formatResetCountdown(targetMs) {
       if (!targetMs) return '';
-      const diffSec = Math.round((targetMs - Date.now()) / 1000);
+      const ms = targetMs < 1e12 ? targetMs * 1000 : targetMs;
+      const diffSec = Math.round((ms - Date.now()) / 1000);
       if (diffSec <= 0) return '即将';
       const hrs = Math.floor(diffSec / 3600);
       const mins = Math.floor((diffSec % 3600) / 60);
@@ -2653,24 +3157,52 @@
 
     function renderSessionPickerList() {
       const container = document.getElementById('sessionPickerList');
-      const current = getCurrentSession();
-      container.innerHTML = state.sessions
+      const currentRoot = getCurrentRootSession();
+      const visibleSessions = getFilteredSessions();
+      const f = state.agentFilter || 'all';
+      const orphans = (state.orphanSubagents || []).filter(
+        (s) => f === 'all' || normalizeAgentKey(s.agentType) === f
+      );
+      const orphanBtn = document.getElementById('btnToggleOrphanSubagents');
+      if (orphanBtn) {
+        if (orphans.length > 0 || state.showOrphanSubagents) {
+          orphanBtn.style.display = 'inline-block';
+          orphanBtn.textContent = state.showOrphanSubagents
+            ? `🐝 隐藏独立子代理 (${orphans.length})`
+            : `🐝 显示子代理 (${orphans.length})`;
+        } else {
+          orphanBtn.style.display = 'none';
+        }
+      }
+
+      if (visibleSessions.length === 0 && (!state.showOrphanSubagents || orphans.length === 0)) {
+        container.innerHTML = `<div style="font-size:10.5px;color:#64748b;padding:6px 4px;">当前筛选下暂无活跃主会话，可点击上方「全部」查看其他平台。</div>`;
+        return;
+      }
+
+      const mainHtml = visibleSessions
         .map((s) => {
           const a = s.analysis || {};
           const tStats = s.tokenStats || {};
-          const isSelected = current && s.id === current.id;
+          const isSelected = !state.activeSubagentId && currentRoot && s.id === currentRoot.id;
           const agentMeta = getAgentDisplayMeta(s.agentType);
           const projName = a.projectName || '工作区';
-          const topic = a.topicTitle || a.userGoal || '开发会话';
+          const topic = a.topicTitle || a.userGoal || s.sessionTitle || '开发会话';
           const timeInfo = formatTimeAgo(s.updatedAt);
           const isFallback = Boolean(s.isHistoricalFallback);
           const fallbackTag = isFallback ? `<span style="font-size:9px;color:#fcd34d;background:rgba(245,158,11,0.18);padding:1px 5px;border-radius:3px;border:1px solid rgba(245,158,11,0.3);">历史存档</span>` : '';
+          const modelTag = s.model ? `<span style="font-size:9px;color:#cbd5e1;background:rgba(148,163,184,0.14);padding:1px 5px;border-radius:3px;font-family:Consolas,monospace;">${escapeHtml(s.model)}</span>` : '';
+          const swarmTag = s.subagentCount > 0
+            ? `<span style="font-size:9px;color:#fcd34d;background:rgba(245,158,11,0.18);padding:1px 5px;border-radius:999px;border:1px solid rgba(245,158,11,0.38);font-weight:700;">🐝 ${s.activeSubagents > 0 ? s.activeSubagents + '运行/' : ''}${s.subagentCount}子代理</span>`
+            : '';
 
           return `<div class="session-item ${isSelected ? 'active' : ''}" onclick="selectSessionById('${s.id}')">
             <div class="session-item-left">
               <div class="session-top-tags">
                 <span class="plat-tag ${agentMeta.cls}">${agentMeta.full}</span>
                 <span class="proj-folder-tag">📂 ${escapeHtml(projName)}</span>
+                ${modelTag}
+                ${swarmTag}
                 ${fallbackTag}
                 <span style="color:${timeInfo.isLive ? '#10b981' : '#64748b'};">${timeInfo.label}</span>
               </div>
@@ -2683,15 +3215,43 @@
           </div>`;
         })
         .join('');
+
+      const orphanHtml = state.showOrphanSubagents && orphans.length > 0
+        ? orphans
+            .map((sub) => {
+              const a = sub.analysis || {};
+              const agentMeta = getAgentDisplayMeta(sub.agentType);
+              const stBadge = getSubagentStatusBadge(sub);
+              const isSelected = state.activeSubagentId === sub.id;
+              return `<div class="session-item ${isSelected ? 'active' : ''}" style="opacity:0.92;border-style:dashed;" onclick="inspectSubagent('${escapeHtml(sub.id)}')">
+                <div class="session-item-left">
+                  <div class="session-top-tags">
+                    <span class="plat-tag ${agentMeta.cls}">${agentMeta.short} 子代理</span>
+                    <span style="font-family:Consolas,monospace;font-weight:800;color:#fcd34d;">@${escapeHtml(sub.subagentRole || 'worker')}</span>
+                    <span style="font-size:9px;color:#cbd5e1;">${stBadge.text}</span>
+                  </div>
+                  <div class="session-topic-line">🐝 ${escapeHtml(a.topicTitle || sub.originTopic || '后台子代理任务')}</div>
+                </div>
+                <div class="session-item-right">
+                  <span style="color:#94a3b8;">${formatDurationSec(sub.durationSec)} · ${sub.steps?.length || 0} 步</span>
+                </div>
+              </div>`;
+            })
+            .join('')
+        : '';
+
+      container.innerHTML = mainHtml + orphanHtml;
     }
 
     async function init() {
       const res = await fetch('/api/state');
       const data = await res.json();
-      state.sessions = data.sessions || [];
+      state.sessions = (data.sessions || []).filter((s) => !s.isSubagent);
+      state.orphanSubagents = data.orphanSubagents || [];
       state.conflicts = data.conflicts || [];
       state.pendingIntercepts = data.pendingIntercepts || [];
       state.config = data.config || {};
+      state.hookConfigs = data.hookConfigs || {};
 
       if (state.sessions.length > 0 && !state.activeSessionId) {
         state.activeSessionId = state.sessions[0].id;
@@ -2764,11 +3324,19 @@
 
       const es = new EventSource('/api/events');
       es.addEventListener('session-updated', (ev) => {
-        const { sessionId, session, conflicts } = JSON.parse(ev.data);
+        const { sessionId, session, orphanSubagents, isOrphanSubagent, conflicts } = JSON.parse(ev.data);
         if (Array.isArray(conflicts)) {
           state.conflicts = conflicts;
         }
-        if (!session || !session.updatedAt || (!session.isHistoricalFallback && Date.now() - Date.parse(session.updatedAt) >= 2 * 60 * 60 * 1000)) return;
+        if (Array.isArray(orphanSubagents)) {
+          state.orphanSubagents = orphanSubagents;
+        }
+        if (isOrphanSubagent || session?.isSubagent) {
+          renderPod();
+          return;
+        }
+        const treeLatestMs = Math.max(Date.parse(session?.updatedAt || 0) || 0, Number(session?._latestTreeMs || 0));
+        if (!session || (!session.isHistoricalFallback && (!treeLatestMs || Date.now() - treeLatestMs >= 2 * 60 * 60 * 1000))) return;
         const idx = state.sessions.findIndex((s) => s.id === sessionId);
         const prevStatus = idx >= 0 ? state.sessions[idx].status : null;
         if (idx >= 0) state.sessions[idx] = session;
@@ -2838,16 +3406,211 @@
       }, 30000);
     }
 
-    function getCurrentSession() {
+    function getCurrentRootSession() {
+      const visible = getFilteredSessions();
       return (
-        state.sessions.find((s) => s.id === state.activeSessionId) ||
-        state.sessions[0] ||
+        visible.find((s) => s.id === state.activeSessionId) ||
+        visible[0] ||
         null
       );
     }
 
+    function getCurrentSession() {
+      const root = getCurrentRootSession();
+      if (state.activeSubagentId) {
+        const fromRoot = (root?.subagents || []).find((sub) => sub.id === state.activeSubagentId);
+        const fromOrphan = !fromRoot
+          ? (state.orphanSubagents || []).find((sub) => sub.id === state.activeSubagentId)
+          : null;
+        const targetSub = fromRoot || fromOrphan || null;
+        if (targetSub) {
+          if (root && targetSub.tokenStats && root.tokenStats) {
+            if (!targetSub.tokenStats.rateLimits && root.tokenStats.rateLimits) {
+              targetSub.tokenStats.rateLimits = root.tokenStats.rateLimits;
+            }
+            if (!targetSub.tokenStats.agentTier && root.tokenStats.agentTier) {
+              targetSub.tokenStats.agentTier = root.tokenStats.agentTier;
+            }
+          }
+          return targetSub;
+        }
+        state.activeSubagentId = null;
+      }
+      return root;
+    }
+
+    function renderSubagentControls(rootSession, activeSession) {
+      const capSwarmPill = document.getElementById('capSwarmPill');
+      const idBarSwarmPill = document.getElementById('idBarSwarmPill');
+      const drawer = document.getElementById('subagentDrawer');
+      const drawerTitle = document.getElementById('subagentDrawerTitle');
+      const drawerList = document.getElementById('subagentDrawerList');
+      const returnBar = document.getElementById('subagentReturnBar');
+      const returnText = document.getElementById('subagentReturnText');
+
+      const subList = rootSession?.subagents || [];
+      const count = Number(rootSession?.subagentCount || subList.length || 0);
+      const running = Number(rootSession?.activeSubagents || 0);
+
+      if (count > 0) {
+        const pillHtml =
+          running > 0
+            ? `<span class="swarm-live-dot"></span><span>🐝 ${running}运行/${count}子代理</span>`
+            : `<span>🐝 子代理 ${count}</span>`;
+        if (capSwarmPill) {
+          capSwarmPill.style.display = 'inline-flex';
+          capSwarmPill.innerHTML = pillHtml;
+          capSwarmPill.classList.toggle('open', Boolean(state.subagentDrawerOpen));
+        }
+        if (idBarSwarmPill) {
+          idBarSwarmPill.style.display = 'inline-flex';
+          idBarSwarmPill.innerHTML = pillHtml;
+          idBarSwarmPill.classList.toggle('open', Boolean(state.subagentDrawerOpen));
+        }
+      } else {
+        if (capSwarmPill) capSwarmPill.style.display = 'none';
+        if (idBarSwarmPill) idBarSwarmPill.style.display = 'none';
+      }
+
+      if (drawer && drawerList && state.subagentDrawerOpen && count > 0) {
+        drawer.className = 'subagent-drawer show';
+        if (drawerTitle) {
+          const titlePrefix = rootSession.swarmTitle ? `${rootSession.swarmTitle} · ` : '';
+          drawerTitle.textContent = `🐝 ${titlePrefix}共 ${count} 个子代理${running > 0 ? ` (${running} 运行中)` : ''}`;
+        }
+        drawerList.innerHTML = subList
+          .map((sub) => {
+            const stBadge = getSubagentStatusBadge(sub);
+            const roleName = sub.subagentRole || sub.rawId?.slice(0, 8) || 'worker';
+            const kindLabel = sub.subagentKind === 'swarm' ? 'Swarm' : 'Sub';
+            const isSel = state.activeSubagentId === sub.id;
+            const briefSnippet = sub.analysis?.topicTitle || sub.originTopic || '';
+            const modelTxt = sub.model ? `<span>${escapeHtml(sub.model)}</span>` : '';
+            return `<div class="subagent-row ${isSel ? 'active' : ''}" onclick="inspectSubagent('${escapeHtml(sub.id)}')" title="点击临时切入查看 @${escapeHtml(roleName)} 的实时步骤与 Diff">
+              <div class="subagent-row-left">
+                <span class="subagent-role-name">@${escapeHtml(roleName)}</span>
+                <span class="subagent-kind-tag">${kindLabel}</span>
+                <span class="subagent-state-tag ${stBadge.cls}">${stBadge.text}</span>
+                <span style="color:#94a3b8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(briefSnippet)}</span>
+              </div>
+              <div class="subagent-row-right">
+                ${modelTxt}
+                <span>⏱ ${formatDurationSec(sub.durationSec)}</span>
+                <span>${sub.steps?.length || 0}步 ▸</span>
+              </div>
+            </div>`;
+          })
+          .join('');
+      } else if (drawer) {
+        drawer.className = 'subagent-drawer';
+      }
+
+      if (returnBar && returnText) {
+        if (activeSession && activeSession.isSubagent) {
+          const stBadge = getSubagentStatusBadge(activeSession);
+          const roleName = activeSession.subagentRole || activeSession.rawId?.slice(0, 8) || 'worker';
+          const mdl = activeSession.model ? ` · ${escapeHtml(activeSession.model)}` : '';
+          returnBar.className = 'subagent-return-bar show';
+          returnText.innerHTML = `🐝 正在查看子代理：<b>@${escapeHtml(roleName)}</b> <span style="opacity:0.88;">(${stBadge.text}${mdl})</span>`;
+        } else {
+          returnBar.className = 'subagent-return-bar';
+        }
+      }
+    }
+
+    function applyUnifiedRemainingQuota({
+      planText,
+      labelText,
+      remPct,
+      usedPct,
+      resetAtMs,
+      extraValSuffix = '',
+      sub1Label,
+      sub1Val,
+      sub2Label,
+      sub2Val
+    }) {
+      const qPlanType = document.getElementById('quotaPlanType');
+      const qStatusBadge = document.getElementById('quotaStatusBadge');
+      const qRlLabel = document.getElementById('quotaRateLimitLabel');
+      const qRlVal = document.getElementById('quotaRateLimitVal');
+      const qRlBar = document.getElementById('quotaRateLimitBar');
+      const qSubLabel1 = document.getElementById('quotaSubLabel1');
+      const qSubLabel2 = document.getElementById('quotaSubLabel2');
+      const qSubVal1 = document.getElementById('quotaSubVal1');
+      const qSubVal2 = document.getElementById('quotaSubVal2');
+      const capQuotaPill = document.getElementById('capTokQuota');
+
+      const safeRem = Math.min(100, Math.max(0, Number.isFinite(Number(remPct)) ? Number(remPct) : 0));
+      const safeUsed = Math.min(
+        100,
+        Math.max(0, Number.isFinite(Number(usedPct)) ? Number(usedPct) : 100 - safeRem)
+      );
+      const remDisp = Number.isInteger(safeRem) ? String(safeRem) : safeRem.toFixed(1);
+      const remInt = Math.round(safeRem);
+      const cd = formatResetCountdown(resetAtMs);
+      const resetSuffix = cd
+        ? cd === '即将'
+          ? ' · 即将重置'
+          : ` · 约${cd}重置`
+        : extraValSuffix
+        ? ` · ${extraValSuffix}`
+        : '';
+
+      if (qPlanType && planText) qPlanType.textContent = planText;
+      if (qRlLabel && labelText) qRlLabel.textContent = labelText;
+      if (qRlVal) {
+        qRlVal.textContent = `剩余 ${remDisp}%${resetSuffix}`;
+        qRlVal.style.color = safeRem < 10 ? '#fca5a5' : safeRem < 25 ? '#fcd34d' : '#6ee7b7';
+      }
+      if (qRlBar) {
+        qRlBar.style.width = `${safeRem}%`;
+        qRlBar.style.background =
+          safeRem < 10
+            ? 'linear-gradient(90deg, #ef4444, #f87171)'
+            : safeRem < 25
+            ? 'linear-gradient(90deg, #f59e0b, #fbbf24)'
+            : 'linear-gradient(90deg, #10b981, #38bdf8)';
+      }
+      if (qStatusBadge) {
+        if (safeRem < 10) {
+          qStatusBadge.textContent = '配额告急';
+          qStatusBadge.className = 'quota-badge danger';
+        } else if (safeRem < 25) {
+          qStatusBadge.textContent = '配额偏紧';
+          qStatusBadge.className = 'quota-badge warn';
+        } else {
+          qStatusBadge.textContent = `剩余 ${remInt}%`;
+          qStatusBadge.className = 'quota-badge';
+        }
+      }
+      if (qSubLabel1 && sub1Label) qSubLabel1.textContent = sub1Label;
+      if (qSubVal1 && sub1Val !== undefined) qSubVal1.textContent = sub1Val;
+      if (qSubLabel2 && sub2Label) qSubLabel2.textContent = sub2Label;
+      if (qSubVal2 && sub2Val !== undefined) qSubVal2.textContent = sub2Val;
+
+      if (capQuotaPill) {
+        capQuotaPill.style.display = 'inline-block';
+        capQuotaPill.textContent = `余${remInt}%`;
+        if (safeRem < 10) {
+          capQuotaPill.style.background = 'rgba(239, 68, 68, 0.24)';
+          capQuotaPill.style.color = '#fca5a5';
+        } else if (safeRem < 25) {
+          capQuotaPill.style.background = 'rgba(245, 158, 11, 0.24)';
+          capQuotaPill.style.color = '#fcd34d';
+        } else {
+          capQuotaPill.style.background = 'rgba(16, 185, 129, 0.2)';
+          capQuotaPill.style.color = '#6ee7b7';
+        }
+      }
+      return { safeRem, safeUsed };
+    }
+
     function renderPod() {
+      renderAgentFilterBar();
+      const rootSession = getCurrentRootSession();
       const session = getCurrentSession();
+      renderSubagentControls(rootSession, session);
       const podEl = document.getElementById('floatingPod');
 
       const conflictCard = document.getElementById('conflictAlertCard');
@@ -2865,11 +3628,21 @@
         if (peakEl) peakEl.textContent = '—';
         if (avgEl) avgEl.textContent = '—';
 
-        document.getElementById('liveSubtitle').textContent = '最近两小时没有活跃对话，等待新动作...';
-        document.getElementById('agentBadgeText').textContent = '等待会话';
+        const filterMeta = state.agentFilter && state.agentFilter !== 'all' ? getAgentDisplayMeta(state.agentFilter) : null;
+        const idlePill = document.getElementById('agentPill');
+        if (idlePill) idlePill.className = `agent-pill ${filterMeta && filterMeta.cls !== 'agy' ? filterMeta.cls : ''}`;
+        const idlePlat = document.getElementById('idBarPlat');
+        if (idlePlat) {
+          idlePlat.className = `plat-tag ${filterMeta ? filterMeta.cls : 'agy'}`;
+          idlePlat.textContent = filterMeta ? filterMeta.full : 'Antigravity';
+        }
+        document.getElementById('liveSubtitle').textContent = filterMeta
+          ? `当前暂无 ${filterMeta.full} 活跃会话，正在自动监听本地日志...`
+          : '最近两小时没有活跃对话，等待新动作...';
+        document.getElementById('agentBadgeText').textContent = filterMeta ? `${filterMeta.short} · 等待会话` : '等待会话';
         document.getElementById('agentLiveDot').className = 'agent-live-dot idle';
         document.getElementById('idBarProj').textContent = '📂 —';
-        document.getElementById('idBarTopic').textContent = '暂无活跃对话';
+        document.getElementById('idBarTopic').textContent = filterMeta ? `暂无 ${filterMeta.full} 对话` : '暂无活跃对话';
         document.getElementById('idBarSwitchHint').textContent = '切换目标 (0) ▾';
         document.getElementById('miniRingVal').textContent = '—';
         document.getElementById('miniRingArc').style.strokeDashoffset = '94.2';
@@ -2959,19 +3732,29 @@
       const pill = document.getElementById('agentPill');
       const agentMeta = getAgentDisplayMeta(session.agentType);
       pill.className = `agent-pill ${agentMeta.cls === 'agy' ? '' : agentMeta.cls}`;
-      document.getElementById('agentLiveDot').className = `agent-live-dot ${timeInfo.isLive ? '' : 'idle'}`;
+      const isActivelyLive = session.isSubagent
+        ? session.subagentRunState === 'working'
+        : timeInfo.isLive && session.status !== 'IDLE';
+      document.getElementById('agentLiveDot').className = `agent-live-dot ${isActivelyLive ? '' : 'idle'}`;
       const projName = a.projectName || '工作区';
-      document.getElementById('agentBadgeText').textContent = `${agentMeta.short} · ${projName}`;
+      const subRoleTag = session.isSubagent ? `@${session.subagentRole || 'worker'}` : '';
+      document.getElementById('agentBadgeText').textContent = session.isSubagent
+        ? `${agentMeta.short} · ${subRoleTag}`
+        : `${agentMeta.short} · ${projName}`;
 
       // 2. Clear Target Identity Bar in Cockpit
       const idPlat = document.getElementById('idBarPlat');
       idPlat.className = `plat-tag ${agentMeta.cls}`;
       idPlat.textContent = agentMeta.full;
-      document.getElementById('idBarProj').textContent = `📂 ${projName}`;
+      document.getElementById('idBarProj').textContent = session.isSubagent
+        ? `🐝 ${subRoleTag}`
+        : `📂 ${projName}`;
       const isFallback = Boolean(session.isHistoricalFallback);
       const fallbackBadge = isFallback ? ' <span style="font-size:9.5px;color:#fcd34d;background:rgba(245,158,11,0.2);padding:1px 5px;border-radius:4px;border:1px solid rgba(245,158,11,0.35);">历史存档</span>' : '';
-      document.getElementById('idBarTopic').innerHTML = `${escapeHtml(a.topicTitle || a.userGoal)}${fallbackBadge} <span style="color:#94a3b8;">(${escapeHtml(timeInfo.label)})</span>`;
-      document.getElementById('idBarSwitchHint').textContent = `切换目标 (${state.sessions.length}) ▾`;
+      const modelBadge = session.model ? ` <span style="font-size:9px;color:#cbd5e1;background:rgba(148,163,184,0.16);padding:1px 5px;border-radius:4px;font-family:Consolas,monospace;">${escapeHtml(session.model)}</span>` : '';
+      const statusHint = session.isSubagent ? getSubagentStatusBadge(session).text : timeInfo.label;
+      document.getElementById('idBarTopic').innerHTML = `${escapeHtml(a.topicTitle || a.userGoal)}${modelBadge}${fallbackBadge} <span style="color:#94a3b8;">(${escapeHtml(statusHint)})</span>`;
+      document.getElementById('idBarSwitchHint').textContent = `切换目标 (${getFilteredSessions().length}) ▾`;
 
       if (state.pickerOpen) {
         renderSessionPickerList();
@@ -3112,143 +3895,114 @@
       }
 
       const rl = tStats.rateLimits;
-      const qPlanType = document.getElementById('quotaPlanType');
-      const qStatusBadge = document.getElementById('quotaStatusBadge');
-      const qRlLabel = document.getElementById('quotaRateLimitLabel');
-      const qRlVal = document.getElementById('quotaRateLimitVal');
-      const qRlBar = document.getElementById('quotaRateLimitBar');
-      const qSubVal1 = document.getElementById('quotaSubVal1');
-      const qSubVal2 = document.getElementById('quotaSubVal2');
-      const capQuotaPill = document.getElementById('capTokQuota');
+      const normAgent = normalizeAgentKey(session.agentType);
+      const todayTok = Number(tStats.todayTokens || tStats.totalTokens || 0);
+      const win5hTok = Number(tStats.window5hTokens || ctxUsed || 0);
 
-      if (rl && typeof rl.primaryUsedPercent === 'number') {
-        if (qPlanType) qPlanType.textContent = `Codex ${rl.planType || 'PLUS'} · 平台限流`;
-        const priPct = rl.primaryUsedPercent;
-        const remPct = rl.primaryRemainingPercent;
-        if (qRlLabel) qRlLabel.textContent = `5小时限流额度已用 (${rl.primaryWindowMinutes || 300}分钟窗口)`;
-        if (qRlVal) qRlVal.textContent = `${priPct}% (剩余 ${remPct}%)`;
-        if (qRlBar) {
-          qRlBar.style.width = `${priPct}%`;
-          qRlBar.style.background = priPct > 85
-            ? 'linear-gradient(90deg, #ef4444, #f87171)'
-            : priPct > 65
-            ? 'linear-gradient(90deg, #f59e0b, #fbbf24)'
-            : 'linear-gradient(90deg, #10b981, #34d399)';
-        }
-        if (qStatusBadge) {
-          if (priPct > 85) {
-            qStatusBadge.textContent = '接近限流';
-            qStatusBadge.className = 'quota-badge danger';
-          } else if (priPct > 65) {
-            qStatusBadge.textContent = '额度紧张';
-            qStatusBadge.className = 'quota-badge warn';
-          } else {
-            qStatusBadge.textContent = `剩余 ${remPct}%`;
-            qStatusBadge.className = 'quota-badge';
-          }
-        }
-        if (qSubVal1) qSubVal1.textContent = `${formatTok(tStats.window5hTokens || ctxUsed)}`;
-        if (qSubVal2) qSubVal2.textContent = `${rl.secondaryUsedPercent || 0}% 已用 · 剩余 ${rl.secondaryRemainingPercent || 100}%`;
-        if (capQuotaPill) {
-          capQuotaPill.style.display = 'inline-block';
-          capQuotaPill.textContent = `余${remPct}%`;
-        }
-      } else if (session.agentType === 'agy' || tStats.agentTier?.provider === 'Antigravity') {
+      if (normAgent === 'agy' || rl?.isAntigravityNative || tStats.agentTier?.provider === 'Antigravity') {
         const tier = tStats.agentTier || { plan: 'Google AI Ultra', isUnlimited: true };
-        const todayTok = Number(tStats.todayTokens || tStats.totalTokens || 0);
-        const win5hTok = Number(tStats.window5hTokens || ctxUsed || 0);
-
         if (rl && rl.isAntigravityNative && typeof rl.primaryRemainingPercent === 'number') {
-          const remPct = rl.primaryRemainingPercent;
-          const usedPct = rl.primaryUsedPercent;
+          const remPct = Math.min(100, Math.max(0, Math.round(rl.primaryRemainingPercent)));
+          const usedPct = Math.min(100, Math.max(0, Math.round(rl.primaryUsedPercent ?? (100 - remPct))));
           const modelTitle = rl.modelName ? ` (${rl.modelName.replace('MODEL_PLACEHOLDER_', '')})` : '';
-          const resetTxt = formatResetCountdown(rl.primaryResetsAt);
-
-          if (qPlanType) qPlanType.textContent = `Antigravity · ${tier.plan}${modelTitle}`;
-          if (qRlLabel) qRlLabel.textContent = `模型可用配额水位 (${resetTxt ? resetTxt + '重置' : '实时'})`;
-          if (qRlVal) qRlVal.textContent = `剩余 ${remPct}% (已用 ${usedPct}%)`;
-          if (qRlBar) {
-            qRlBar.style.width = `${remPct}%`;
-            qRlBar.style.background = remPct < 20
-              ? 'linear-gradient(90deg, #ef4444, #f87171)'
-              : remPct < 40
-              ? 'linear-gradient(90deg, #f59e0b, #fbbf24)'
-              : 'linear-gradient(90deg, #10b981, #34d399)';
-          }
-          if (qStatusBadge) {
-            if (remPct < 20) {
-              qStatusBadge.textContent = '配额紧张';
-              qStatusBadge.className = 'quota-badge danger';
-            } else if (remPct < 40) {
-              qStatusBadge.textContent = '适度使用';
-              qStatusBadge.className = 'quota-badge warn';
-            } else {
-              qStatusBadge.textContent = `剩余 ${remPct}%`;
-              qStatusBadge.className = 'quota-badge';
-            }
-          }
-          if (qSubVal1) qSubVal1.textContent = `${formatTok(win5hTok)} (5h滚动)`;
-          if (qSubVal2) qSubVal2.textContent = `${formatTok(todayTok)} (今日累计)`;
-          if (capQuotaPill) {
-            capQuotaPill.style.display = 'inline-block';
-            capQuotaPill.textContent = `余${remPct}%`;
-          }
+          applyUnifiedRemainingQuota({
+            planText: `Antigravity · ${tier.plan}${modelTitle}`,
+            labelText: '可用配额水位 (Antigravity 实时)',
+            remPct,
+            usedPct,
+            resetAtMs: rl.primaryResetsAt,
+            sub1Label: `已用 ${usedPct}% · 5h消耗:`,
+            sub1Val: `${formatTok(win5hTok)}`,
+            sub2Label: '今日全局累计:',
+            sub2Val: `${formatTok(todayTok)}`
+          });
         } else {
-          if (qPlanType) qPlanType.textContent = `Antigravity · ${tier.plan}`;
-          if (qRlLabel) qRlLabel.textContent = `今日累计用量 (${tier.plan} 顶格计划)`;
-          if (qRlVal) qRlVal.textContent = `${formatTok(todayTok)} (顶格特权 · 额度充足)`;
-          if (qRlBar) {
-            qRlBar.style.width = '100%';
-            qRlBar.style.background = 'linear-gradient(90deg, #10b981, #38bdf8)';
-          }
-          if (qStatusBadge) {
-            qStatusBadge.textContent = '🟢 顶格特权';
-            qStatusBadge.className = 'quota-badge';
-          }
-          if (qSubVal1) qSubVal1.textContent = `${formatTok(win5hTok)} (滚动)`;
-          if (qSubVal2) qSubVal2.textContent = `${formatTok(todayTok)} (${tier.plan})`;
-          if (capQuotaPill) {
-            capQuotaPill.style.display = 'inline-block';
-            capQuotaPill.textContent = 'Ultra';
-          }
+          applyUnifiedRemainingQuota({
+            planText: `Antigravity · ${tier.plan}`,
+            labelText: `可用配额水位 (${tier.plan})`,
+            remPct: 100,
+            usedPct: 0,
+            resetAtMs: 0,
+            extraValSuffix: '顶格特权',
+            sub1Label: '已用 0% · 5h消耗:',
+            sub1Val: `${formatTok(win5hTok)}`,
+            sub2Label: '今日全局累计:',
+            sub2Val: `${formatTok(todayTok)} (${tier.plan})`
+          });
         }
+      } else if (rl && rl.isKimiNative && (typeof rl.primaryRemainingPercent === 'number' || typeof rl.primaryUsedPercent === 'number')) {
+        const usedPct = Math.min(
+          100,
+          Math.max(0, Math.round(rl.primaryUsedPercent ?? (100 - Number(rl.primaryRemainingPercent || 0))))
+        );
+        const remPct = Math.min(
+          100,
+          Math.max(0, Math.round(rl.primaryRemainingPercent ?? (100 - usedPct)))
+        );
+        const modelSuffix = session.model ? ` (${session.model})` : '';
+        let secSummary = `${formatTok(todayTok)}`;
+        if (typeof rl.secondaryRemainingPercent === 'number') {
+          const secRem = Math.min(100, Math.max(0, Math.round(rl.secondaryRemainingPercent)));
+          const secUsed = Math.min(100, Math.max(0, Math.round(rl.secondaryUsedPercent ?? (100 - secRem))));
+          secSummary = `剩余 ${secRem}% (已用 ${secUsed}%)`;
+        }
+        applyUnifiedRemainingQuota({
+          planText: `Kimi Code · 官方配额${modelSuffix}`,
+          labelText: `5小时并发可用配额 (${rl.primaryWindowMinutes || 300}分钟窗口)`,
+          remPct,
+          usedPct,
+          resetAtMs: rl.primaryResetsAt,
+          sub1Label: `已用 ${usedPct}% · 5h消耗:`,
+          sub1Val: `${formatTok(win5hTok)}`,
+          sub2Label: '周/月度配额水位:',
+          sub2Val: secSummary
+        });
+      } else if (rl && (typeof rl.primaryRemainingPercent === 'number' || typeof rl.primaryUsedPercent === 'number')) {
+        const usedPct = Math.min(
+          100,
+          Math.max(0, Math.round(rl.primaryUsedPercent ?? (100 - Number(rl.primaryRemainingPercent || 0))))
+        );
+        const remPct = Math.min(
+          100,
+          Math.max(0, Math.round(rl.primaryRemainingPercent ?? (100 - usedPct)))
+        );
+        const secRem = Math.min(100, Math.max(0, Math.round(rl.secondaryRemainingPercent ?? 100)));
+        const secUsed = Math.min(100, Math.max(0, Math.round(rl.secondaryUsedPercent ?? (100 - secRem))));
+        applyUnifiedRemainingQuota({
+          planText: `Codex ${rl.planType || 'PLUS'} · 官方配额`,
+          labelText: `5小时窗口可用配额 (${rl.primaryWindowMinutes || 300}分钟窗口)`,
+          remPct,
+          usedPct,
+          resetAtMs: rl.primaryResetsAt,
+          sub1Label: `已用 ${usedPct}% · 5h消耗:`,
+          sub1Val: `${formatTok(win5hTok)}`,
+          sub2Label: '周度窗口水位:',
+          sub2Val: `剩余 ${secRem}% (已用 ${secUsed}%)`
+        });
       } else {
         const budgetTokens = getDailyBudgetTokens();
-        const todayTok = Number(tStats.todayTokens || tStats.totalTokens || 0);
-        const win5hTok = Number(tStats.window5hTokens || ctxUsed || 0);
         const budgetPct = Math.min(100, Number(((todayTok / budgetTokens) * 100).toFixed(1)));
         const remBudgetPct = Math.max(0, Number((100 - budgetPct).toFixed(1)));
         const win5hPct = Number(((win5hTok / budgetTokens) * 100).toFixed(1));
+        const nextMidnight = new Date();
+        nextMidnight.setHours(24, 0, 0, 0);
+        const platformPrefix = normAgent === 'kimi'
+          ? `Kimi Code${session.model ? ' (' + session.model + ')' : ''}`
+          : normAgent === 'claude'
+          ? 'Claude Code'
+          : 'API 实时按量';
 
-        if (qPlanType) qPlanType.textContent = `API 实时按量 · 日配额 ${formatTok(budgetTokens)} ⚙️`;
-        if (qRlLabel) qRlLabel.textContent = `今日消耗额度水位 (日配额 ${formatTok(budgetTokens)})`;
-        if (qRlVal) qRlVal.textContent = `${formatTok(todayTok)} (${budgetPct}% 已用 · 剩 ${remBudgetPct}%)`;
-        if (qRlBar) {
-          qRlBar.style.width = `${budgetPct}%`;
-          qRlBar.style.background = budgetPct > 85
-            ? 'linear-gradient(90deg, #ef4444, #f87171)'
-            : budgetPct > 70
-            ? 'linear-gradient(90deg, #f59e0b, #fbbf24)'
-            : 'linear-gradient(90deg, #10b981, #34d399)';
-        }
-        if (qStatusBadge) {
-          if (budgetPct > 85) {
-            qStatusBadge.textContent = '预算告警';
-            qStatusBadge.className = 'quota-badge danger';
-          } else if (budgetPct > 70) {
-            qStatusBadge.textContent = '消耗偏高';
-            qStatusBadge.className = 'quota-badge warn';
-          } else {
-            qStatusBadge.textContent = `剩余 ${remBudgetPct}%`;
-            qStatusBadge.className = 'quota-badge';
-          }
-        }
-        if (qSubVal1) qSubVal1.textContent = `${formatTok(win5hTok)} (占 ${win5hPct}%)`;
-        if (qSubVal2) qSubVal2.textContent = `${formatTok(todayTok)} (占日额度 ${budgetPct}%)`;
-        if (capQuotaPill) {
-          capQuotaPill.style.display = 'inline-block';
-          capQuotaPill.textContent = `余${remBudgetPct}%`;
-        }
+        applyUnifiedRemainingQuota({
+          planText: `${platformPrefix} · 日配额 ${formatTok(budgetTokens)} ⚙️`,
+          labelText: `今日可用预算水位 (日配额 ${formatTok(budgetTokens)})`,
+          remPct: remBudgetPct,
+          usedPct: budgetPct,
+          resetAtMs: nextMidnight.getTime(),
+          sub1Label: `已用 ${budgetPct}% · 5h消耗:`,
+          sub1Val: `${formatTok(win5hTok)} (占 ${win5hPct}%)`,
+          sub2Label: '今日全局累计:',
+          sub2Val: `${formatTok(todayTok)}`
+        });
       }
 
       // 9. Page 3: Time-Travel Scrubbing Slider + File Blast-Radius Bubbles + Recent Steps

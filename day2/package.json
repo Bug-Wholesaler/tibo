@@ -1,7 +1,7 @@
 {
   "name": "ypod",
   "version": "1.0.0",
-  "description": "YPod - 跨平台 Coding Agent (Antigravity / Codex / Cursor / Claude) 桌面置顶监工悬浮舱",
+  "description": "YPod - 跨平台 Coding Agent (Antigravity / Codex / Claude Code / Kimi Code) 桌面置顶监工悬浮舱",
   "main": "main.js",
   "bin": {
     "ypod": "./bin/ypod.js"
@@ -41,6 +41,8 @@
     "supervisor",
     "antigravity",
     "codex",
+    "claude-code",
+    "kimi-code",
     "hooks",
     "electron"
   ],

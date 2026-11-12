@@ -340,17 +340,41 @@ function extractStepDiff(toolName, rawArgs = {}) {
     return parseApplyPatchDiff(patchStr);
   }
 
-  if (lower === 'multiedit' && Array.isArray(args.edits)) {
+  const editList = Array.isArray(args.edits)
+    ? args.edits
+    : Array.isArray(args.edit)
+    ? args.edit
+    : null;
+  if (
+    (lower === 'multiedit' || lower === 'strreplacefile' || lower === 'str_replace_file') &&
+    editList
+  ) {
     const filePath = cleanArgString(args.file_path || args.Path || args.path || '');
     let totalAdded = 0;
     let totalRemoved = 0;
     const allLines = [];
-    for (let idx = 0; idx < args.edits.length; idx++) {
-      const ed = args.edits[idx] || {};
-      const sub = computeLineDiff(ed.old_string || '', ed.new_string || '', 28);
+    for (let idx = 0; idx < editList.length; idx++) {
+      const ed = editList[idx] || {};
+      const oldPart =
+        typeof ed.old_string === 'string'
+          ? ed.old_string
+          : typeof ed.old === 'string'
+          ? ed.old
+          : typeof ed.old_str === 'string'
+          ? ed.old_str
+          : '';
+      const newPart =
+        typeof ed.new_string === 'string'
+          ? ed.new_string
+          : typeof ed.new === 'string'
+          ? ed.new
+          : typeof ed.new_str === 'string'
+          ? ed.new_str
+          : '';
+      const sub = computeLineDiff(oldPart, newPart, 28);
       totalAdded += sub.addedCount;
       totalRemoved += sub.removedCount;
-      if (args.edits.length > 1) {
+      if (editList.length > 1) {
         allLines.push({ type: 'meta', text: `@@ 变更块 #${idx + 1} @@` });
       }
       allLines.push(...sub.lines);
@@ -366,8 +390,17 @@ function extractStepDiff(toolName, rawArgs = {}) {
     };
   }
 
-  if (lower === 'edit_file' || lower === 'str_replace' || lower === 'strreplace' || lower === 'edit') {
+  if (
+    lower === 'edit_file' ||
+    lower === 'str_replace' ||
+    lower === 'strreplace' ||
+    lower === 'strreplacefile' ||
+    lower === 'str_replace_file' ||
+    lower === 'edit'
+  ) {
     const filePath = cleanArgString(args.Path || args.file_path || args.path || '');
+    const nestedEdit =
+      args.edit && typeof args.edit === 'object' && !Array.isArray(args.edit) ? args.edit : null;
     const oldStr =
       typeof args.Target === 'string'
         ? args.Target
@@ -375,6 +408,12 @@ function extractStepDiff(toolName, rawArgs = {}) {
         ? args.old_string
         : typeof args.old_str === 'string'
         ? args.old_str
+        : typeof args.old === 'string'
+        ? args.old
+        : nestedEdit && typeof nestedEdit.old === 'string'
+        ? nestedEdit.old
+        : nestedEdit && typeof nestedEdit.old_string === 'string'
+        ? nestedEdit.old_string
         : '';
     const newStr =
       typeof args.Replacement === 'string'
@@ -383,6 +422,12 @@ function extractStepDiff(toolName, rawArgs = {}) {
         ? args.new_string
         : typeof args.new_str === 'string'
         ? args.new_str
+        : typeof args.new === 'string'
+        ? args.new
+        : nestedEdit && typeof nestedEdit.new === 'string'
+        ? nestedEdit.new
+        : nestedEdit && typeof nestedEdit.new_string === 'string'
+        ? nestedEdit.new_string
         : '';
 
     if (!oldStr && !newStr) return null;
@@ -394,7 +439,12 @@ function extractStepDiff(toolName, rawArgs = {}) {
     };
   }
 
-  if (lower === 'write_file' || lower === 'create_file' || lower === 'write') {
+  if (
+    lower === 'write_file' ||
+    lower === 'create_file' ||
+    lower === 'write' ||
+    lower === 'writefile'
+  ) {
     const filePath = cleanArgString(args.Path || args.file_path || args.path || '');
     const content =
       typeof args.Content === 'string'
@@ -405,7 +455,7 @@ function extractStepDiff(toolName, rawArgs = {}) {
         ? args.file_text
         : '';
     if (!content) return null;
-    const allLines = content.split(/\r?\n/);
+    const allLines = content.replace(/\r?\n$/, '').split(/\r?\n/);
     const maxPreview = 36;
     return {
       kind: 'write',
@@ -507,7 +557,12 @@ function assessRisk(toolName, args = {}, rawText = '') {
     };
   }
 
-  if (name.includes('run_command') || name.includes('exec') || name.includes('bash')) {
+  if (
+    name.includes('run_command') ||
+    name.includes('exec') ||
+    name.includes('bash') ||
+    name.includes('shell')
+  ) {
     return {
       level: 'LOW',
       label: '终端执行',
@@ -531,24 +586,39 @@ function translateToolCall(toolName, rawArgs = {}) {
   const lower = name.toLowerCase();
   const args = typeof rawArgs === 'string' ? { input: rawArgs } : rawArgs || {};
 
-  if (lower === 'read_file' || lower === 'view_file' || lower === 'read') {
+  if (
+    lower === 'read_file' ||
+    lower === 'view_file' ||
+    lower === 'read' ||
+    lower === 'readfile' ||
+    lower === 'readmediafile' ||
+    lower === 'read_media_file'
+  ) {
     const filePath = cleanArgString(args.Path || args.file_path || args.path || '');
     const base = filePath ? path.basename(filePath.replace(/\\+/g, '/')) : '未知文件';
+    const isMedia = lower === 'readmediafile' || lower === 'read_media_file';
     return {
-      icon: '📖',
+      icon: isMedia ? '🖼️' : '📖',
       actionType: 'READ',
       targetFile: base,
       filePath,
       workspaceHint: extractWorkspaceFromPath(filePath),
-      category: '读取文件',
-      title: `查阅 ${base}`,
-      humanSummary: `正在阅读「${base}」的代码结构与配置细节`,
+      category: isMedia ? '读取媒体' : '读取文件',
+      title: isMedia ? `查看媒体 ${base}` : `查阅 ${base}`,
+      humanSummary: isMedia
+        ? `正在解析媒体资源「${base}」内容`
+        : `正在阅读「${base}」的代码结构与配置细节`,
       rawDetail: filePath,
       risk: assessRisk(name, args)
     };
   }
 
-  if (lower === 'write_file' || lower === 'create_file' || lower === 'write') {
+  if (
+    lower === 'write_file' ||
+    lower === 'create_file' ||
+    lower === 'write' ||
+    lower === 'writefile'
+  ) {
     const filePath = cleanArgString(args.Path || args.file_path || args.path || '');
     const base = filePath ? path.basename(filePath.replace(/\\+/g, '/')) : '新文件';
     const diff = extractStepDiff(name, rawArgs);
@@ -573,6 +643,8 @@ function translateToolCall(toolName, rawArgs = {}) {
     lower === 'multiedit' ||
     lower === 'str_replace' ||
     lower === 'strreplace' ||
+    lower === 'strreplacefile' ||
+    lower === 'str_replace_file' ||
     lower === 'apply_patch'
   ) {
     const diff = extractStepDiff(name, rawArgs);
@@ -622,21 +694,154 @@ function translateToolCall(toolName, rawArgs = {}) {
     };
   }
 
-  if (lower === 'todowrite' || lower === 'task' || lower === 'subagent') {
-    const desc = cleanArgString(args.description || args.prompt || '');
+  if (
+    lower === 'askuserquestion' ||
+    lower === 'ask_user_question' ||
+    lower === 'ask_question'
+  ) {
+    const q = cleanArgString(
+      args.question || (Array.isArray(args.questions) && args.questions[0]?.question) || args.prompt || ''
+    );
     return {
-      icon: '📋',
+      icon: '❓',
       actionType: 'EXPLORE',
       targetFile: name,
-      category: '任务规划',
-      title: desc ? `规划: ${desc.slice(0, 22)}` : `更新任务清单 (${name})`,
-      humanSummary: desc ? `正在拆解并调度子任务：「${desc.slice(0, 38)}」` : `正在更新会话任务进度清单`,
+      category: '等待确认',
+      title: q ? `询问: ${q.slice(0, 20)}` : '等待用户确认',
+      humanSummary: q ? `⏳ 正在等待用户确认：「${q.slice(0, 36)}」` : '⏳ 正在等待用户确认选项',
+      rawDetail: q || cleanArgString(args).slice(0, 180),
+      risk: assessRisk(name, args)
+    };
+  }
+
+  if (lower === 'skill') {
+    const skillName = cleanArgString(args.skill || args.name || args.skill_name || '');
+    return {
+      icon: '🧩',
+      actionType: 'EXPLORE',
+      targetFile: name,
+      category: '技能加载',
+      title: skillName ? `加载技能: ${skillName.slice(0, 18)}` : '加载专属技能',
+      humanSummary: skillName ? `正在启用技能模块「${skillName.slice(0, 30)}」` : '正在加载技能工作流指令',
+      rawDetail: skillName || cleanArgString(args).slice(0, 160),
+      risk: assessRisk(name, args)
+    };
+  }
+
+  if (
+    lower === 'swarm' ||
+    lower === 'invoke_subagent' ||
+    lower === 'define_subagent' ||
+    lower === 'post_message' ||
+    lower === 'read_board' ||
+    lower === 'swarm_wait'
+  ) {
+    if (lower === 'swarm_wait') {
+      return {
+        icon: '💤',
+        actionType: 'EXPLORE',
+        targetFile: 'Swarm 看板',
+        category: '看板待命',
+        title: '看板休眠待命',
+        humanSummary: '💤 已挂起并监听看板唤醒消息',
+        rawDetail: cleanArgString(args).slice(0, 160),
+        risk: assessRisk(name, args)
+      };
+    }
+    if (lower === 'post_message') {
+      const msgTxt = cleanArgString(args.text || args.message || '').replace(/\s+/g, ' ');
+      return {
+        icon: '📨',
+        actionType: 'EXPLORE',
+        targetFile: 'Swarm 看板',
+        category: '协同汇报',
+        title: msgTxt ? `发帖: ${msgTxt.slice(0, 20)}` : '看板汇报结果',
+        humanSummary: msgTxt ? `📨 向协同看板发送汇报：${msgTxt.slice(0, 40)}` : '📨 向协同看板同步当前进展',
+        rawDetail: msgTxt.slice(0, 240),
+        risk: assessRisk(name, args)
+      };
+    }
+    if (lower === 'read_board') {
+      return {
+        icon: '📋',
+        actionType: 'READ',
+        targetFile: 'Swarm 看板',
+        category: '协同同步',
+        title: '读取协同看板动态',
+        humanSummary: '📋 正在读取子代理协同看板最新消息',
+        rawDetail: cleanArgString(args).slice(0, 160),
+        risk: assessRisk(name, args)
+      };
+    }
+    const targetWorker = cleanArgString(args.name || args.subagent_name || args.agent_name || '');
+    const actionLabel = cleanArgString(args.action || (lower === 'invoke_subagent' ? 'invoke' : 'define'));
+    const briefTxt = cleanArgString(args.brief || args.prompt || args.title || '').replace(/\s+/g, ' ');
+    return {
+      icon: '🐝',
+      actionType: 'EXPLORE',
+      targetFile: targetWorker ? `@${targetWorker}` : 'Swarm 编排',
+      category: '子智能体调度',
+      title: targetWorker
+        ? `子代理 @${targetWorker} (${actionLabel || '调度'})`
+        : `Swarm 协同 (${actionLabel || name})`,
+      humanSummary: targetWorker
+        ? `🐝 正在调度子代理 @${targetWorker}${briefTxt ? `：${briefTxt.slice(0, 30)}` : ''}`
+        : `🐝 正在编排多智能体协同动作 (${actionLabel || name})`,
+      rawDetail: briefTxt || cleanArgString(args).slice(0, 200),
+      risk: assessRisk(name, args)
+    };
+  }
+
+  if (
+    lower === 'todowrite' ||
+    lower === 'todolist' ||
+    lower === 'todo_list' ||
+    lower === 'creategoal' ||
+    lower === 'create_goal' ||
+    lower === 'updategoal' ||
+    lower === 'update_goal' ||
+    lower === 'enterplanmode' ||
+    lower === 'enter_plan_mode' ||
+    lower === 'exitplanmode' ||
+    lower === 'exit_plan_mode' ||
+    lower === 'task' ||
+    lower === 'subagent' ||
+    lower === 'agentswarm' ||
+    lower === 'agent_swarm'
+  ) {
+    let desc = cleanArgString(args.description || args.title || args.goal || args.prompt || '');
+    if (!desc && Array.isArray(args.todos) && args.todos.length > 0) {
+      const activeTodo =
+        args.todos.find((t) => t && (t.status === 'in_progress' || t.status === 'doing')) ||
+        args.todos[0];
+      desc = cleanArgString(activeTodo?.title || activeTodo?.content || `共 ${args.todos.length} 项待办`);
+    }
+    if (!desc && lower.includes('planmode')) {
+      desc = lower.includes('enter') ? '进入方案规划模式' : '完成方案规划准备执行';
+    }
+    const isSwarm = lower === 'task' || lower === 'subagent' || lower === 'agentswarm' || lower === 'agent_swarm';
+    return {
+      icon: isSwarm ? '🐝' : '📋',
+      actionType: 'EXPLORE',
+      targetFile: name,
+      category: isSwarm ? '子智能体调度' : '任务规划',
+      title: desc ? `${isSwarm ? '调度' : '规划'}: ${desc.slice(0, 22)}` : `更新任务清单 (${name})`,
+      humanSummary: desc
+        ? `正在${isSwarm ? '拆解并调度子智能体' : '更新任务进度清单'}：「${desc.slice(0, 38)}」`
+        : `正在更新会话任务进度清单`,
       rawDetail: desc || cleanArgString(args).slice(0, 180),
       risk: assessRisk(name, args)
     };
   }
 
-  if (lower === 'search_web' || lower === 'web_search' || lower === 'websearch' || lower === 'webfetch') {
+  if (
+    lower === 'search_web' ||
+    lower === 'web_search' ||
+    lower === 'websearch' ||
+    lower === 'webfetch' ||
+    lower === 'fetchurl' ||
+    lower === 'fetch_url'
+  ) {
     const query = cleanArgString(args.query || args.q || args.url || '');
     return {
       icon: '🌐',
@@ -644,7 +849,7 @@ function translateToolCall(toolName, rawArgs = {}) {
       targetFile: 'Web 搜索',
       category: '联网检索',
       title: `检索: ${query.slice(0, 22)}`,
-      humanSummary: `正在联网搜索「${query.slice(0, 32)}」相关的技术文档`,
+      humanSummary: `正在联网检索「${query.slice(0, 32)}」相关技术资料`,
       rawDetail: query,
       risk: assessRisk(name, args)
     };
@@ -669,6 +874,7 @@ function translateToolCall(toolName, rawArgs = {}) {
       }
     }
     const summaryHint = cleanArgString(args.toolSummary || args.description || '');
+    const cwdHint = cleanArgString(args.cwd || '');
     const risk = assessRisk(name, { CommandLine: cmd });
 
     let humanSummary = `正在终端执行：${summaryHint || cmd.slice(0, 42)}`;
@@ -706,7 +912,7 @@ function translateToolCall(toolName, rawArgs = {}) {
       icon: risk.score >= 70 ? '🚨' : '⚡',
       actionType,
       targetFile,
-      workspaceHint: extractWorkspaceFromPath(cmd),
+      workspaceHint: extractWorkspaceFromPath(cwdHint) || extractWorkspaceFromPath(cmd),
       category: '终端指令',
       title: summaryHint || cmd.slice(0, 26),
       humanSummary,
@@ -744,7 +950,7 @@ function extractWorkspaceFromPath(str) {
   const norm = str.replace(/\\+/g, '/');
 
   // Ignore internal agent telemetry/config paths
-  if (/\/(\.gemini|\.codex|\.claude|\.ypod|AppData\/Local\/Temp)\//i.test(norm)) {
+  if (/\/(\.gemini|\.codex|\.claude|\.kimi-code|\.kimi|\.kimi-work|\.kimi-webbridge|\.ypod|AppData\/Local\/Temp)\//i.test(norm)) {
     return '';
   }
 
@@ -821,6 +1027,8 @@ function analyzeSessionTrajectory(session) {
   const latestMeaningfulGoal =
     meaningfulPrompts[meaningfulPrompts.length - 1] ||
     userSteps[userSteps.length - 1]?.rawDetail ||
+    session.originTopic ||
+    session.sessionTitle ||
     '等待用户指令';
 
   const topicTitle = summarizeTopicTitle(latestMeaningfulGoal);
@@ -942,7 +1150,33 @@ function analyzeSessionTrajectory(session) {
   let liveBroadcast = '正在扫描项目上下文与相关文件...';
 
   if (lastStep) {
-    if (lastStep.kind === 'user') {
+    if (session._subagentKilled) {
+      stageIndex = 4;
+      stageName = '子代理已结束';
+      orbState = 'IDLE';
+      liveBroadcast = `子代理 @${session.subagentRole || 'worker'} 已完成退出`;
+    } else if (session._parkedOnSwarmWait) {
+      stageIndex = 4;
+      stageName = '看板待命中';
+      orbState = 'IDLE';
+      liveBroadcast = `子代理 @${session.subagentRole || 'worker'} 已汇报并在看板休眠待命`;
+    } else if (session._kimiTurnState === 'IDLE') {
+      stageIndex = 4;
+      stageName = session._kimiTurnReason === 'interrupted' ? '回合已中断' : '回合已交付';
+      orbState = 'IDLE';
+      liveBroadcast =
+        session._kimiTurnReason === 'interrupted'
+          ? `「${topicTitle}」已中断待命，等待新指令`
+          : `已完成「${topicTitle}」当前回合，等待新指令`;
+    } else if (
+      session._kimiTurnState === 'WAITING_CONFIRM' ||
+      lastStep.category === '等待确认'
+    ) {
+      stageIndex = 2;
+      stageName = '等待确认中';
+      orbState = 'THINKING';
+      liveBroadcast = lastStep.humanSummary || `⏳ 等待用户确认「${topicTitle}」下一步操作`;
+    } else if (lastStep.kind === 'user') {
       stageIndex = 0;
       stageName = '解析需求';
       orbState = 'THINKING';

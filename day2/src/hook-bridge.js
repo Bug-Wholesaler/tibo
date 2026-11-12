@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Universal Agent Hook Bridge (Supports Antigravity AGY, OpenAI Codex, Cursor, Claude Code)
+ * Universal Agent Hook Bridge (Supports Antigravity AGY, OpenAI Codex, Claude Code, Kimi Code, Cursor)
  * Reads hook JSON from stdin (or argv for Codex notify), forwards to the Desktop Floating Supervisor,
  * and returns the allow/deny decision to the host agent.
  */
@@ -40,19 +40,29 @@ function readStdin() {
   });
 }
 
-function normalizeHookPayload(rawObj, cliMeta) {
+function normalizeHookPayload(rawObj, cliMeta = {}) {
   let agent = (cliMeta.agent || 'auto').toLowerCase();
   if (agent === 'cc') agent = 'claude';
+  if (agent === 'kimi-code') agent = 'kimi';
   if (agent === 'auto') {
-    if (rawObj.transcriptPath && rawObj.transcriptPath.includes('antigravity')) {
+    const rawTranscript = String(rawObj.transcriptPath || rawObj.transcript_path || '');
+    const rawSessionId = String(rawObj.session_id || rawObj.conversationId || '');
+    if (rawTranscript.includes('antigravity')) {
       agent = 'agy';
     } else if (rawObj['last-assistant-message'] || rawObj.type === 'agent-turn-complete') {
       agent = 'codex';
     } else if (
+      rawSessionId.startsWith('session_') ||
+      rawObj.client_type ||
+      rawObj.session_title !== undefined ||
+      rawTranscript.includes('.kimi')
+    ) {
+      agent = 'kimi';
+    } else if (
       rawObj.hook_event_name ||
       rawObj.session_id ||
       rawObj.tool_input ||
-      (rawObj.transcript_path && String(rawObj.transcript_path).includes('.claude'))
+      rawTranscript.includes('.claude')
     ) {
       agent = 'claude';
     } else {
@@ -79,6 +89,7 @@ function normalizeHookPayload(rawObj, cliMeta) {
     eventType: cliMeta.eventType || rawObj.hook_event_name || 'PreToolUse',
     conversationId:
       rawObj.conversationId || rawObj.session_id || rawObj['thread-id'] || 'live-hook-session',
+    sessionTitle: rawObj.session_title || rawObj.sessionTitle || '',
     transcriptPath: rawObj.transcriptPath || rawObj.transcript_path || '',
     cwd: rawObj.cwd || '',
     toolName,
@@ -128,6 +139,42 @@ function postToSupervisor(payload) {
   });
 }
 
+function formatHookDecision(normalized, result = {}) {
+  if (normalized.eventType === 'PostToolUse') {
+    return { exitCode: 0, stdout: '{}\n' };
+  }
+
+  const decision = result.decision || 'allow';
+  const reason = result.reason || '';
+
+  if (normalized.agent === 'cursor' && decision === 'deny') {
+    return {
+      exitCode: 2, // Cursor uses exit code 2 to block tool execution
+      stdout: JSON.stringify({ decision: 'deny', reason }) + '\n'
+    };
+  }
+
+  if ((normalized.agent === 'claude' || normalized.agent === 'kimi') && decision === 'deny') {
+    return {
+      exitCode: 0,
+      stdout:
+        JSON.stringify({
+          decision: 'block',
+          reason,
+          hookSpecificOutput: {
+            hookEventName: 'PreToolUse',
+            permissionDecision: 'deny',
+            permissionDecisionReason: reason
+          }
+        }) + '\n'
+    };
+  }
+
+  const out = { decision };
+  if (reason) out.reason = reason;
+  return { exitCode: 0, stdout: JSON.stringify(out) + '\n' };
+}
+
 async function main() {
   const cliMeta = parseArgs();
   const stdinText = await readStdin();
@@ -142,40 +189,17 @@ async function main() {
 
   const normalized = normalizeHookPayload(rawObj, cliMeta);
   const result = await postToSupervisor(normalized);
-
-  // Format output according to host agent contract
-  if (normalized.eventType === 'PostToolUse') {
-    process.stdout.write('{}\n');
-    process.exit(0);
-  }
-
-  const decision = result.decision || 'allow';
-  const reason = result.reason || '';
-
-  if (normalized.agent === 'cursor' && decision === 'deny') {
-    process.stdout.write(JSON.stringify({ decision: 'deny', reason }) + '\n');
-    process.exit(2); // Cursor uses exit code 2 to block tool execution
-  }
-
-  if (normalized.agent === 'claude' && decision === 'deny') {
-    process.stdout.write(
-      JSON.stringify({
-        decision: 'block',
-        reason,
-        hookSpecificOutput: {
-          hookEventName: 'PreToolUse',
-          permissionDecision: 'deny',
-          permissionDecisionReason: reason
-        }
-      }) + '\n'
-    );
-    process.exit(0);
-  }
-
-  const out = { decision };
-  if (reason) out.reason = reason;
-  process.stdout.write(JSON.stringify(out) + '\n');
-  process.exit(0);
+  const formatted = formatHookDecision(normalized, result);
+  process.stdout.write(formatted.stdout);
+  process.exit(formatted.exitCode);
 }
 
-main();
+if (require.main === module) {
+  main();
+}
+
+module.exports = {
+  parseArgs,
+  normalizeHookPayload,
+  formatHookDecision
+};

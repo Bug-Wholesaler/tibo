@@ -38,6 +38,121 @@ function ensureStandaloneHookBridge() {
   return srcBridge;
 }
 
+function buildHookConfigSnippets(customBridgePath = '') {
+  const extractedBridge = customBridgePath || ensureStandaloneHookBridge();
+  const bridgePath = path.resolve(extractedBridge).replace(/\\/g, '/');
+  return {
+    bridgePath,
+    agy: JSON.stringify(
+      {
+        'ypod-ai-supervisor': {
+          PreToolUse: [
+            {
+              matcher: 'run_command',
+              hooks: [
+                {
+                  type: 'command',
+                  command: `node ${bridgePath} --agent agy --event PreToolUse`,
+                  timeout: 25
+                }
+              ]
+            }
+          ]
+        }
+      },
+      null,
+      2
+    ),
+    codex: `# ~/.codex/config.toml\nnotify = ["node", "${bridgePath}", "--agent", "codex", "--event", "notify"]`,
+    claude: JSON.stringify(
+      {
+        hooks: {
+          PreToolUse: [
+            {
+              matcher: 'Bash|Edit|MultiEdit|Write',
+              hooks: [
+                {
+                  type: 'command',
+                  command: `node "${bridgePath}" --agent claude --event PreToolUse`,
+                  timeout: 25
+                }
+              ]
+            }
+          ]
+        }
+      },
+      null,
+      2
+    ),
+    kimi: `# ~/.kimi-code/config.toml\n[[hooks]]\nevent = "PreToolUse"\nmatcher = "Bash|Write|Edit"\ncommand = "node \\"${bridgePath}\\" --agent kimi --event PreToolUse"\ntimeout = 25`,
+    cursor: JSON.stringify(
+      {
+        version: 1,
+        hooks: {
+          preToolUse: [
+            {
+              command: `node ${bridgePath} --agent cursor --event PreToolUse`,
+              matcher: 'Shell|Write',
+              failClosed: false,
+              timeout: 25
+            }
+          ]
+        }
+      },
+      null,
+      2
+    )
+  };
+}
+
+function buildAgentSummary(sessions = []) {
+  const supportedAgents = ['agy', 'codex', 'claude', 'kimi', 'cursor'];
+  const byAgent = {};
+  for (const key of supportedAgents) {
+    byAgent[key] = {
+      sessions: 0,
+      working: 0,
+      totalTokens: 0,
+      estimatedCostUsd: 0
+    };
+  }
+  let totalTokens = 0;
+  let totalCostUsd = 0;
+  let workingSessions = 0;
+
+  for (const s of sessions) {
+    if (!s) continue;
+    let key = String(s.agentType || 'other').toLowerCase();
+    if (key === 'cc') key = 'claude';
+    if (key === 'kimi-code') key = 'kimi';
+    if (!byAgent[key]) {
+      byAgent[key] = { sessions: 0, working: 0, totalTokens: 0, estimatedCostUsd: 0 };
+    }
+    const ts = s.tokenStats || {};
+    const tok = Number(ts.totalTokens || 0);
+    const cost = Number(ts.estimatedCostUsd || 0);
+    const isWorking = s.status === 'WORKING' || s.status === 'INTERCEPTED';
+
+    byAgent[key].sessions += 1;
+    if (isWorking) {
+      byAgent[key].working += 1;
+      workingSessions += 1;
+    }
+    byAgent[key].totalTokens += tok;
+    byAgent[key].estimatedCostUsd = Number((byAgent[key].estimatedCostUsd + cost).toFixed(4));
+    totalTokens += tok;
+    totalCostUsd += cost;
+  }
+
+  return {
+    totalSessions: sessions.length,
+    workingSessions,
+    totalTokens,
+    estimatedCostUsd: Number(totalCostUsd.toFixed(4)),
+    byAgent
+  };
+}
+
 function resolveTargetFileOnDisk(rawPath, workspacePath = '') {
   const clean = String(rawPath || '').trim();
   if (!clean) return null;
@@ -325,81 +440,43 @@ function createSupervisorServer(options = {}) {
 
   watcher.on('session-updated', ({ sessionId, newSteps, session }) => {
     const allSessions = watcher.getAllSessions();
+    const orphanSubagents = watcher.getOrphanSubagents();
     const conflicts = detectCrossSessionConflicts(allSessions);
+
+    if (session && session.isSubagent) {
+      const rootId = session.rootParentSessionId || watcher.resolveRootParentId(session.id);
+      const rootParent = rootId ? allSessions.find((s) => s.id === rootId) : null;
+      if (rootParent) {
+        broadcast('session-updated', {
+          sessionId: rootParent.id,
+          updatedSubagentId: session.id,
+          newSteps,
+          session: rootParent,
+          orphanSubagents,
+          conflicts
+        });
+      } else {
+        broadcast('session-updated', {
+          sessionId,
+          isOrphanSubagent: true,
+          newSteps,
+          session,
+          orphanSubagents,
+          conflicts
+        });
+      }
+      return;
+    }
+
     broadcast('session-updated', {
       sessionId,
       newSteps,
       session,
+      orphanSubagents,
       conflicts
     });
     triggerAutoAISynthesis(sessionId, session);
   });
-
-  function buildHookConfigSnippets() {
-    const extractedBridge = ensureStandaloneHookBridge();
-    const bridgePath = path.resolve(extractedBridge).replace(/\\/g, '/');
-    return {
-      bridgePath,
-      agy: JSON.stringify(
-        {
-          'ypod-ai-supervisor': {
-            PreToolUse: [
-              {
-                matcher: 'run_command',
-                hooks: [
-                  {
-                    type: 'command',
-                    command: `node ${bridgePath} --agent agy --event PreToolUse`,
-                    timeout: 25
-                  }
-                ]
-              }
-            ]
-          }
-        },
-        null,
-        2
-      ),
-      codex: `# ~/.codex/config.toml\nnotify = ["node", "${bridgePath}", "--agent", "codex", "--event", "notify"]`,
-      claude: JSON.stringify(
-        {
-          hooks: {
-            PreToolUse: [
-              {
-                matcher: 'Bash|Edit|MultiEdit|Write',
-                hooks: [
-                  {
-                    type: 'command',
-                    command: `node "${bridgePath}" --agent claude --event PreToolUse`,
-                    timeout: 25
-                  }
-                ]
-              }
-            ]
-          }
-        },
-        null,
-        2
-      ),
-      cursor: JSON.stringify(
-        {
-          version: 1,
-          hooks: {
-            preToolUse: [
-              {
-                command: `node ${bridgePath} --agent cursor --event PreToolUse`,
-                matcher: 'Shell|Write',
-                failClosed: false,
-                timeout: 25
-              }
-            ]
-          }
-        },
-        null,
-        2
-      )
-    };
-  }
 
   function readJsonBody(req) {
     return new Promise((resolve) => {
@@ -466,6 +543,8 @@ function createSupervisorServer(options = {}) {
       const allSessions = watcher.getAllSessions();
       return sendJson(res, 200, {
         sessions: allSessions,
+        orphanSubagents: watcher.getOrphanSubagents(),
+        agentSummary: buildAgentSummary(allSessions),
         conflicts: detectCrossSessionConflicts(allSessions),
         pendingIntercepts: Array.from(pendingIntercepts.values()).map((p) => p.item),
         config: {
@@ -491,6 +570,7 @@ function createSupervisorServer(options = {}) {
       const payload = await readJsonBody(req);
       let agentKey = (payload.agent || 'agy').toLowerCase();
       if (agentKey === 'cc') agentKey = 'claude';
+      if (agentKey === 'kimi-code') agentKey = 'kimi';
       const sessionId = `${agentKey}:${payload.conversationId || 'live-hook'}`;
 
       let session = watcher.sessions.get(sessionId);
@@ -499,13 +579,15 @@ function createSupervisorServer(options = {}) {
           agy: 'Antigravity (AGY)',
           codex: 'OpenAI Codex',
           cursor: 'Cursor Agent',
-          claude: 'Claude Code'
+          claude: 'Claude Code',
+          kimi: 'Kimi Code'
         };
         const badgeColors = {
           agy: '#38bdf8',
           codex: '#10b981',
           cursor: '#a855f7',
-          claude: '#f59e0b'
+          claude: '#f59e0b',
+          kimi: '#ec4899'
         };
         session = {
           id: sessionId,
@@ -515,6 +597,7 @@ function createSupervisorServer(options = {}) {
           badgeColor: badgeColors[agentKey] || '#38bdf8',
           filePath: payload.transcriptPath || 'Hook Live',
           cwd: payload.cwd || '',
+          sessionTitle: payload.sessionTitle || '',
           updatedAt: new Date().toISOString(),
           status: 'WORKING',
           steps: [],
@@ -522,8 +605,11 @@ function createSupervisorServer(options = {}) {
           analysis: null
         };
         watcher.sessions.set(sessionId, session);
-      } else if (payload.cwd && !session.cwd) {
-        session.cwd = payload.cwd;
+      } else {
+        if (payload.cwd && !session.cwd) session.cwd = payload.cwd;
+        if (payload.sessionTitle && !session.sessionTitle) {
+          session.sessionTitle = payload.sessionTitle;
+        }
       }
 
       const translated = translateToolCall(payload.toolName, payload.toolArgs);
@@ -842,6 +928,8 @@ module.exports = {
   getYPodDataDir,
   getConfigFilePath,
   ensureStandaloneHookBridge,
+  buildHookConfigSnippets,
+  buildAgentSummary,
   resolveTargetFileOnDisk,
   openLocalFileTarget
 };
