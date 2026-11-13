@@ -66,7 +66,19 @@ window.YTTRIUM_CONFIG = {
       winnerName: "",
       winnerImage: ""
     },
-    { day: 4,  status: "done", title: "Day 04：什么，作为影卫达总裁的我居然被感情修罗场包围了？！", desc: "16:9 横屏第一人称多女主修罗场 Galgame（325 节点 7 章全长剧本 + 5 女同屏怼脸立绘 + 五窗私信/公关PPT/董事会三轮嘴炮 3 大玩法 + 8 大结局；内置一键切换第 1 部散户嘴替版《恋与皮衣》）", githubUrl: "https://github.com/Bug-Wholesaler/yttrium/tree/main/day4", downloadUrl: "https://raw.githack.com/Bug-Wholesaler/yttrium/main/day4/index.html", winnerName: "", winnerImage: "" },
+    {
+      day: 4,
+      status: "done",
+      title: "Day 04：什么，作为影卫达总裁的我居然被感情修罗场包围了？！",
+      desc: "16:9 横屏第一人称多女主修罗场 Galgame（325 节点 7 章全长剧本 + 5 女同屏怼脸立绘 + 五窗私信/公关PPT/董事会三轮嘴炮 3 大玩法 + 8 大结局；内置一键切换第 1 部散户嘴替版《恋与皮衣》）",
+      githubUrl: "https://github.com/Bug-Wholesaler/yttrium/tree/main/day4",
+      downloadUrl: "https://nvda-dlss4-pov.pages.dev/",
+      downloadLabel: "🎮 直接试玩 Galgame",
+      cellTag: "🎮 点击试玩",
+      directPlay: true,
+      winnerName: "",
+      winnerImage: ""
+    },
     { day: 5,  status: "auto", title: "Day 05：待解锁更新", desc: "", githubUrl: "", downloadUrl: "", winnerName: "", winnerImage: "" },
     { day: 6,  status: "auto", title: "Day 06：待解锁更新", desc: "", githubUrl: "", downloadUrl: "", winnerName: "", winnerImage: "" },
     { day: 7,  status: "auto", title: "Day 07：待解锁更新", desc: "", githubUrl: "", downloadUrl: "", winnerName: "", winnerImage: "" },

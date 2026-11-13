@@ -1072,7 +1072,10 @@
       days: []
     };
 
-    let selectedDayNum = 1;
+    let selectedDayNum = (config.days || []).reduce(
+      (latest, d) => (d.status === "done" && d.day > latest ? d.day : latest),
+      1
+    );
 
     // 获取当前真实北京时间 (UTC+8) 的 Date 对象与 YYYY-MM-DD
     function getBeijingNow() {
@@ -1172,8 +1175,8 @@
 
         if (finalStatus === "done") {
           statusClass = "status-done";
-          centerIcon = "🚀";
-          bottomText = (item.githubUrl || item.downloadUrl) ? "🔗 作品直达" : "已交作业";
+          centerIcon = item.directPlay ? "🎮" : "🚀";
+          bottomText = item.cellTag || ((item.githubUrl || item.downloadUrl) ? "🔗 作品直达" : "已交作业");
         } else if (finalStatus === "reset") {
           statusClass = "status-reset";
           centerIcon = "🧋";
@@ -1251,11 +1254,19 @@
       // 若尚未选中，第一次点击先选中并在底部详情栏展示；若已选中再次点击，直接弹出作品跳转/下载窗口！
       if (finalStatus === "done") {
         if (selectedDayNum === item.day) {
-          openProjectModal(item);
+          if (item.directPlay && item.downloadUrl) {
+            window.open(item.downloadUrl, "_blank", "noopener,noreferrer");
+          } else {
+            openProjectModal(item);
+          }
         } else {
           selectedDayNum = item.day;
           renderAll();
-          showToast(`🚀 已选中 Day ${dayStr}，再次点击格子或右侧按钮可跳转 GitHub / 下载`);
+          showToast(
+            item.directPlay
+              ? `🎮 已选中 Day ${dayStr}，再次点击格子或右侧「${item.downloadLabel || "直接试玩"}」即可开玩`
+              : `🚀 已选中 Day ${dayStr}，再次点击格子或右侧按钮可跳转 GitHub / 下载`
+          );
         }
         return;
       }
@@ -1304,7 +1315,7 @@
           aDown.href = item.downloadUrl;
           aDown.target = "_blank";
           aDown.rel = "noopener noreferrer";
-          aDown.innerHTML = "📦 下载 / 体验";
+          aDown.textContent = item.downloadLabel || "📦 下载 / 体验";
           actions.appendChild(aDown);
         }
       } else if (finalStatus === "reset") {
@@ -1343,7 +1354,7 @@
         aDown.href = item.downloadUrl;
         aDown.target = "_blank";
         aDown.rel = "noopener noreferrer";
-        aDown.innerHTML = "📦 下载作品 / 在线体验";
+        aDown.textContent = item.downloadLabel || "📦 下载作品 / 在线体验";
         btnBox.appendChild(aDown);
       }
 
