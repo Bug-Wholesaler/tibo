@@ -1,0 +1,392 @@
+'use strict';
+
+window.POV_CHAPTERS = window.POV_CHAPTERS || {};
+
+window.POV_CHAPTERS.ch2 = {
+  id: 'ch2',
+  title: '第二章 · 姐夫严选与闺女掌镜',
+  chapterLabel: '第二章',
+  startNode: 'ch2_01',
+  nodes: {
+    ch2_01: {
+      bg: 'bg_night_bistro',
+      loc: '📍 高管夜景清吧卡座（台北风味复刻包厢） · 凌晨 03:48',
+      stage: [{ id: 'alice', pos: 'center', emote: '💕' }],
+      speaker: '旁白',
+      speakerId: 'system',
+      text: '暧昧昏暗的暖橘色灯光洒在桌面。乐姐一手举着香槟色手机，另一手把那块写着《南洋算力加急调拨备忘录》的黑色平板抵在你胸口。',
+      next: 'ch2_02',
+    },
+    ch2_02: {
+      speaker: '乐姐',
+      speakerId: 'alice',
+      text: '“勋哥你看外面热搜写得多刻薄呀，非把人家说成插帧小三。可明明当年——可是我老公亲手端着酒杯把我介绍给你的，正经原厂授权渠道！”',
+      danmaku: ['🍷 姐夫亲自端酒杯引荐，含金量拉满', '💍 什么叫做授权经销商级情感关系'],
+      next: 'ch2_03',
+    },
+    ch2_03: {
+      speaker: '【我】',
+      speakerId: 'me',
+      fx: 'bp_surge',
+      effects: { bpm: 8 },
+      text: '（她嘴上说着委屈，手机前置摄像头却在极近距离咔嚓对焦——那双无辜金棕眸子里的算计精明得比华尔街高频量化模型还吓人！）',
+      next: 'ch2_04',
+    },
+    ch2_04: {
+      speaker: '乐姐',
+      speakerId: 'alice',
+      text: '“更何况上次在台北那间夜市清吧，咱俩端着芭乐盘贴那么近聊这单 48 亿的生意，还是你亲闺女帮咱俩调光按的快门呢～家族高度透明化，对不对？”',
+      next: 'ch2_05',
+    },
+    ch2_05: {
+      speaker: '【我】',
+      speakerId: 'me',
+      fx: 'shutter',
+      text: '（对！就是那张照片！亲闺女兴冲冲帮我们打光拍的九宫格高清合影，现在正挂在全网热搜置顶第二条，配文《全家福级算力生态协作》……）',
+      next: 'ch2_05b',
+    },
+    ch2_05b: {
+      speaker: '乐姐',
+      speakerId: 'alice',
+      text: '“来嘛～趁你的法人权限章还没彻底被董事会注销，我们趁着这红酒劲儿再补拍一张？上次闺女帮我挑的美颜滤镜叫‘温柔高管夜未央’，全网点赞八十万呢～”',
+      next: 'ch2_05c_choice',
+    },
+    ch2_05c_choice: {
+      speaker: '【我】',
+      speakerId: 'me',
+      text: '（她高高举起已经打开前置自拍九宫格模式的手机，非要把我的脸拉进镜头框里凑第二张热搜爆款图——）',
+      choices: [
+        {
+          text: '双手捂住脸往椅背狂躲：“上次我闺女傻白甜不懂事被你当工具人，今天休想再拍！”',
+          tag: '死守底线',
+          effects: { favor: { alice: -6, lori: 4 }, bpm: 4 },
+          next: 'ch2_05d_a',
+        },
+        {
+          text: '端起旁边的冰柠檬水遮住镜片：“要拍就拍果盘！不许把我黑眼圈和裂了条缝的眼镜拍进去！”',
+          tag: '偶像包袱',
+          effects: { favor: { alice: 4 }, stock: -0.3, bpm: 6 },
+          next: 'ch2_05d_b',
+        },
+      ],
+    },
+    ch2_05d_a: {
+      speaker: '乐姐',
+      speakerId: 'alice',
+      text: '“哎呀，勋哥真会开玩笑～那照片闺女可还夸我口红色号显白呢，怎么一回到圣克拉拉就成工具人啦？”',
+      next: 'ch2_06',
+    },
+    ch2_05d_b: {
+      speaker: '乐姐',
+      speakerId: 'alice',
+      fx: 'shutter',
+      text: '“嘻嘻，侧颜比正脸更有脆弱美呢～勋哥真是越到破产边缘越迷人！”',
+      next: 'ch2_06',
+    },
+    ch2_06: {
+      speaker: '旁白',
+      speakerId: 'system',
+      text: '乐姐轻轻坐进你身侧的卡座边缘，抬手叉起一块撒了甘草梅粉的脆芭乐递到你唇边，笑容甜得像加了三倍糖精的拿铁。',
+      next: 'ch2_07',
+    },
+    ch2_07: {
+      speaker: '乐姐',
+      speakerId: 'alice',
+      text: '“所以嘛，只要勋哥今晚在董事局生效前，替我把南洋算力倒爷那 48 亿急件批条最后确认一下——”',
+      next: 'ch2_08_choice',
+    },
+    ch2_08_choice: {
+      speaker: '【我】',
+      speakerId: 'me',
+      text: '（嘴唇离她叉着的芭乐不到五厘米，平板电子签章页也亮到我眼皮底下。外头董事会正因为这单风波把我三职免掉，现在该怎么应对？）',
+      choices: [
+        {
+          text: '侧头躲开芭乐，严正拒绝：“南洋那 48 亿批条已经惹出天大风波了，我绝不会再盖章！”',
+          tag: '铁面止损',
+          effects: { favor: { alice: -8, lori: 6 }, stock: 1.0, bpm: -2 },
+          next: 'ch2_09_a',
+        },
+        {
+          text: '先张嘴接住芭乐拖延时间：“别急呀……我权限被锁一半了，先看看姐夫最近还好吗？”',
+          tag: '以茶制茶',
+          effects: { favor: { alice: 6, lori: -5 }, stock: -0.6, bpm: 8 },
+          next: 'ch2_09_b',
+        },
+        {
+          text: '反问她：“要是真签了，明天股价再砸 10 个点，你和你老公替我扛兜吗？”',
+          tag: '风险甩脸',
+          effects: { favor: { alice: 3 }, stock: 0.4, bpm: 4 },
+          next: 'ch2_09_c',
+        },
+      ],
+    },
+    ch2_09_a: {
+      stage: [{ id: 'alice', pos: 'center', emote: '❄️' }],
+      speaker: '乐姐',
+      speakerId: 'alice',
+      text: '“哎呀，勋哥翻脸好无情哦。可我相册里还有十八张闺女替咱俩拍的原图未公开呢，要不我发给路边社再加个滤镜？”',
+      next: 'ch2_09c_followup',
+    },
+    ch2_09_b: {
+      stage: [{ id: 'alice', pos: 'center', emote: '💕' }],
+      speaker: '乐姐',
+      speakerId: 'alice',
+      text: '“老公昨天刚飞南洋去接货啦～他还夸勋哥最懂照顾朋友生意，只要批条通过，回头给你寄两箱顶级热带水果压压惊呢。”',
+      next: 'ch2_09c_followup',
+    },
+    ch2_09_c: {
+      stage: [{ id: 'alice', pos: 'center', emote: '✨' }],
+      speaker: '乐姐',
+      speakerId: 'alice',
+      text: '“股价算什么嘛，我们只按实际交付卡数结佣金～勋哥连这三职都要保不住了，还不如多抓点真金白银在手里暖心呀。”',
+      next: 'ch2_09c_followup',
+    },
+    ch2_09c_followup: {
+      speaker: '乐姐',
+      speakerId: 'alice',
+      text: '“而且你忘了？当初那批南洋算力节点在账面上可是挂着‘科研集群预留’的名义签的。现在全球都在盯着那 48 亿去向，我不替你把最后三页补全，明天法务审计问起来怎么圆？”',
+      next: 'ch2_09d',
+    },
+    ch2_09d: {
+      speaker: '【我】',
+      speakerId: 'me',
+      text: '（48 亿算力倒爷风波……表面上打着跨洋数据中心采购的名头，实际上一半溢价货全拐了十八道弯流进了未知灰仓！我现在就是因为这张单子被董事局怀疑内外勾结！）',
+      next: 'ch2_09e_choice',
+    },
+    ch2_09e_choice: {
+      speaker: '【我】',
+      speakerId: 'me',
+      text: '（她居然拿『你不签明早审计更难圆』当筹码反过来威逼我，必须彻底看清这只甜妹的底牌——）',
+      choices: [
+        {
+          text: '“别拿 48 亿吓我！账面原单全是合规流程走完的，问题出在你后面私自加急调拨的那几千块卡！”',
+          tag: '拆穿漏洞',
+          effects: { favor: { alice: -5 }, stock: 0.9, bpm: -2 },
+          next: 'ch2_09f_a',
+        },
+        {
+          text: '“你老公不是在南洋挺罩得住吗？让他把这笔单子退了，我给你包个超大红包算违约补偿！”',
+          tag: '花钱消灾',
+          effects: { favor: { alice: 5 }, stock: 0.3, bpm: 4 },
+          next: 'ch2_09f_b',
+        },
+      ],
+    },
+    ch2_09f_a: {
+      speaker: '乐姐',
+      speakerId: 'alice',
+      text: '“哟……记性还真不错嘛勋哥。不过那些卡现在早拆开装进柜子运转了，想退？除非你拿自己的养老期权填窟窿。”',
+      next: 'ch2_10',
+    },
+    ch2_09f_b: {
+      speaker: '乐姐',
+      speakerId: 'alice',
+      text: '“切，我缺你那点违约金吗？我要的是以后影卫达亚太总代的一句话批条权！”',
+      next: 'ch2_10',
+    },
+    ch2_10: {
+      speaker: '旁白',
+      speakerId: 'system',
+      text: '突然，“咔哒”一声，模拟清吧的后门被人不紧不慢地推开了半寸。',
+      next: 'ch2_11',
+    },
+    ch2_11: {
+      stage: [
+        { id: 'lori', pos: 'left', emote: '✨' },
+        { id: 'alice', pos: 'right', emote: '💦' },
+      ],
+      speaker: '洛莉',
+      speakerId: 'lori',
+      text: '“打扰啦两位。看你们聊原厂授权渠道聊得这么热火朝天，怎么能少了原生架构本尊旁听呢？”',
+      danmaku: ['⚡ 双姝同屏站位达成！', '👀 洛莉压低亮度开启死亡凝视'],
+      next: 'ch2_12',
+    },
+    ch2_12: {
+      speaker: '【我】',
+      speakerId: 'me',
+      fx: 'bp_surge',
+      effects: { bpm: 14 },
+      text: '（洛莉手里依然拎着那把银剪刀站在左侧阴影里，而右侧的乐姐瞬间把平板反扣、无缝切回了纯洁无辜的乖巧微笑……我感觉我的血压正往 170 冲！）',
+      next: 'ch2_13',
+    },
+    ch2_13: {
+      stage: [
+        { id: 'lori', pos: 'left', emote: '' },
+        { id: 'alice', pos: 'right', emote: '💕' },
+      ],
+      speaker: '乐姐',
+      speakerId: 'alice',
+      text: '“洛莉姐～好久不见呀！刚才我和勋哥正说起您贤惠能干呢，连南洋那边那么多经销商都夸您御夫有术～”',
+      next: 'ch2_14',
+    },
+    ch2_14: {
+      stage: [
+        { id: 'lori', pos: 'left', emote: '💢' },
+        { id: 'alice', pos: 'right', emote: '' },
+      ],
+      speaker: '洛莉',
+      speakerId: 'lori',
+      text: '“过奖了，乐小姐。我听说你丈夫亲自端酒杯做担保、我亲闺女掌镜拍贴脸自拍的时候，我居然在家里帮这头蠢牛校对年报呢——亲爱的，这叫‘原厂认证’对吧？”',
+      next: 'ch2_15',
+    },
+    ch2_15: {
+      speaker: '【我】',
+      speakerId: 'me',
+      text: '（两边视线像两道高压激光交汇在我鼻梁上！现在说错任何半个标点符号，左边挨剪刀、右边发原图、股价原地再砸 5 个点！）',
+      next: 'ch2_16_choice',
+    },
+    ch2_16_choice: {
+      speaker: '【我】',
+      speakerId: 'me',
+      text: '（在左边洛莉与右边乐姐的同时注视下，我深吸一口气开口端水——）',
+      choices: [
+        {
+          text: '当着俩人面大喊：“南洋 48 亿单子从这一秒起作废冻结！所有未过审计批条全部归零！”',
+          tag: '壮士断腕',
+          effects: { favor: { lori: 9, alice: -10 }, stock: 1.4, bpm: 4 },
+          next: 'ch2_17_a',
+        },
+        {
+          text: '赔笑打圆场：“大家别吵！都是自家生态链朋友，那照片其实是广角镜头畸变看着近！”',
+          tag: '全员撒盐',
+          effects: { favor: { lori: -8, alice: -3 }, jackets: -1, stock: -1.2, bpm: 12 },
+          next: 'ch2_17_b',
+        },
+        {
+          text: '伸手拉乐姐平板：“别闹了，这平板里的算力排期明明是假单子，拿过来我当场格式化！”',
+          tag: '强拆炸弹',
+          effects: { favor: { lori: 5, alice: 2 }, stock: 0.6, bpm: 6 },
+          next: 'ch2_17_c',
+        },
+      ],
+    },
+    ch2_17_a: {
+      stage: [
+        { id: 'lori', pos: 'left', emote: '✨' },
+        { id: 'alice', pos: 'right', emote: '💢' },
+      ],
+      speaker: '乐姐',
+      speakerId: 'alice',
+      text: '“好啊黄仁勋！翻脸就不认账？行，你等着，我这就飞回董事局联合南洋大客户一起申请查封库存！”',
+      next: 'ch2_18',
+    },
+    ch2_17_b: {
+      stage: [
+        { id: 'lori', pos: 'left', emote: '💢' },
+        { id: 'alice', pos: 'right', emote: '💦' },
+      ],
+      speaker: '洛莉',
+      speakerId: 'lori',
+      fx: 'slash',
+      text: '“广角畸变？能把你的脸畸变到别人耳垂旁边去呀！少穿这一件下摆透气的布料吧，亲爱的！”',
+      next: 'ch2_18',
+    },
+    ch2_17_c: {
+      stage: [
+        { id: 'lori', pos: 'left', emote: '' },
+        { id: 'alice', pos: 'right', emote: '💦' },
+      ],
+      speaker: '乐姐',
+      speakerId: 'alice',
+      text: '“呀……你干嘛抢平板呀，里面还存着上次我老公替你垫资的香槟账单呢！洛莉姐你看他，急起来连商业伙伴的账都不认了～”',
+      next: 'ch2_18',
+    },
+    ch2_18: {
+      speaker: '旁白',
+      speakerId: 'system',
+      text: '正当你左右夹击冷汗直冒时，手机后台股票行情插件疯狂爆红，“叮”地弹出一道金色全屏通告条！',
+      next: 'ch2_19',
+    },
+    ch2_19: {
+      speaker: '彭博快讯',
+      speakerId: 'system',
+      text: '【突发市场联动】受高管夜半私密花边再发酵影响，影卫达夜盘买盘进一步抽离，若盘中跌幅跌破 -18.0% 关键位，巴老爷子将正式超越某皮衣掌门跃居榜单第七！',
+      effects: { stock: -2.2 },
+      next: 'ch2_19b',
+    },
+    ch2_19b: {
+      speaker: '【我】',
+      speakerId: 'me',
+      text: '（-18%……那个天天喝樱桃可乐买铁路跟保险的老头，不用开一场技术发布会、也不用哄三个女人，光是坐等我被扒光就能稳稳超过我升世界第七？！）',
+      next: 'ch2_19c',
+    },
+    ch2_19c: {
+      stage: [
+        { id: 'lori', pos: 'left', emote: '✨' },
+        { id: 'alice', pos: 'right', emote: '💦' },
+      ],
+      speaker: '洛莉',
+      speakerId: 'lori',
+      text: '“恭喜你呀，亲爱的～刚才还口口声声说‘Buy More Save More’，现在连巴菲特老先生都要隔着海岸给你送锦旗了呢。”',
+      next: 'ch2_19d',
+    },
+    ch2_19d: {
+      speaker: '乐姐',
+      speakerId: 'alice',
+      text: '“咦……勋哥你的智能手表怎么一直在‘嘀嘀嘀’狂响？是不是昨晚没睡好加刚才酒没醒呀？”',
+      next: 'ch2_20',
+    },
+    ch2_20: {
+      speaker: '【我】',
+      speakerId: 'me',
+      fx: 'bp_surge',
+      effects: { bpm: 14 },
+      text: '（“嗡——”左耳突然像被针扎了一样轰鸣，心脏像一台超频过热的矿卡在肋骨里疯狂撞击！头晕……眼前的所有人影都开始重影晃动！）',
+      next: 'ch2_21',
+    },
+    ch2_21: {
+      speaker: '洛莉',
+      speakerId: 'lori',
+      text: '“喂？你怎么嘴唇瞬间没血色了？平时吃三顿黑松露松饼挺抗造的，装晕想逃避批斗？”',
+      next: 'ch2_22',
+    },
+    ch2_22: {
+      speaker: '乐姐',
+      speakerId: 'alice',
+      text: '“呀！勋哥该不会真气出心律不齐了吧……那今晚这单谁签呀？”',
+      next: 'ch2_23',
+    },
+    ch2_23: {
+      speaker: '【我】',
+      speakerId: 'me',
+      text: '（胸口憋得像压了整整一机柜 GB200……撑不住了，手肘一滑，整个人直挺挺往红皮卡座扶手边栽了下去——）',
+      next: 'ch2_23b_choice',
+    },
+    ch2_23b_choice: {
+      speaker: '【我】',
+      speakerId: 'me',
+      text: '（临倒下前的半秒钟，视野逐渐变暗红，我拼尽最后一口力气试图做出反应——）',
+      choices: [
+        {
+          text: '死死攥紧领口：“谁也别想……再动我身上这件黑皮衣……”',
+          tag: '皮衣执念',
+          effects: { bpm: 6, favor: { lori: 2 } },
+          next: 'ch2_24',
+        },
+        {
+          text: '朝乐姐递出的平板猛吹一口气：“我先晕为敬……那 48 亿你找法务签去吧……”',
+          tag: '战术昏迷',
+          effects: { bpm: -4, stock: 0.4, favor: { alice: -2 } },
+          next: 'ch2_24',
+        },
+      ],
+    },
+    ch2_24: {
+      speaker: '旁白',
+      speakerId: 'system',
+      fx: 'alarm',
+      text: '走廊尽头刺耳的医疗推车警报声瞬间大作。几名穿深色制服的院内护工推开包厢门，熟练地把心电贴片拍在你胸口——领头走来的，正是执掌影卫达医疗保健部门近二十年的那道冰冷白大褂身影。',
+      next: 'ch2_25',
+    },
+    ch2_25: {
+      speaker: '【我】',
+      speakerId: 'me',
+      text: '（完……洛莉的剪刀还没躲过去，又直接落进了最毒舌、捏着我二十年体检和秘密的 2 号插帧手里……）',
+      next: 'ch3_01',
+    },
+  },
+};
+
+if (typeof module !== 'undefined') {
+  module.exports = window.POV_CHAPTERS.ch2;
+}

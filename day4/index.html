@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>什么，作为影卫达总裁的我居然被感情修罗场包围了？！ | DLSS 4 POV</title>
+  <link rel="stylesheet" href="pov-style.css">
+</head>
+<body>
+  <div class="desktop-bg-kline"></div>
+
+  <div class="game-container" id="gameContainer">
+    <div class="portrait-rotate-hint">🔄 建议横屏或电脑宽屏打开，体验完整 16:9 第一人称修罗场剧场</div>
+
+    <!-- 顶部第一人称状态栏 HUD -->
+    <header class="top-hud" id="topHud">
+      <div class="hud-metrics">
+        <div class="hud-pill">
+          <span class="hud-ico">📉</span>
+          <span class="hud-name">影卫达股价</span>
+          <strong class="hud-val stock-down" id="stockDisplay">$129.00 (-14.00%)</strong>
+        </div>
+        <div class="hud-pill">
+          <span class="hud-ico">✂️</span>
+          <span class="hud-name">皮衣存活</span>
+          <strong class="hud-val" id="jacketsDisplay">3 / 30 件</strong>
+        </div>
+        <div class="hud-pill">
+          <span class="hud-ico">🫀</span>
+          <span class="hud-name">心率血压</span>
+          <strong class="hud-val" id="bpmDisplay">96 BPM · 128/82 mmHg</strong>
+        </div>
+        <button type="button" class="hud-pill hud-radar-btn" id="btnRadar" title="查看五女修罗场雷达">
+          <span class="hud-ico">🔥</span>
+          <span class="hud-name">修罗场雷达</span>
+          <span class="radar-mini-strip" id="radarMiniStrip"></span>
+        </button>
+      </div>
+
+      <div class="hud-actions">
+        <button type="button" class="hud-btn" id="btnSave" title="存档 (6槽位)">💾 存档</button>
+        <button type="button" class="hud-btn" id="btnLoad" title="读档">📂 读档</button>
+        <button type="button" class="hud-btn" id="btnSkip" title="已读快进">⏩ 快进</button>
+        <button type="button" class="hud-btn" id="btnAuto" title="自动播放">▶️ 自动</button>
+        <button type="button" class="hud-btn" id="btnLog" title="历史回看 (100句)">📜 回看</button>
+        <button type="button" class="hud-btn" id="btnGallery" title="8大结局画廊">🏆 画廊</button>
+        <a class="hud-btn hud-btn-switch" href="troll-edition.html" title="切换到第1部：散户嘴替版《恋与皮衣》">🕹️ 第1部</a>
+        <button type="button" class="hud-btn hud-btn-mute" id="btnMute" title="音效开关">🔊</button>
+      </div>
+    </header>
+
+    <!-- 16:9 第一人称主视角舞台 -->
+    <main class="stage-area" id="stageArea">
+      <div class="stage-bg" id="stageBg" style="background-image: url('assets/bg_hq_plaza.jpg');"></div>
+
+      <!-- 实时地点标牌 -->
+      <div class="location-tag" id="locationTag">📍 影卫达圣克拉拉总部 · 顶楼落地窗前</div>
+
+      <!-- 三槽位女主同屏怼脸舞台 (严禁出现任何男主第三人称立绘) -->
+      <div class="heroines-stage" id="heroinesStage">
+        <div class="heroine-slot slot-left empty" id="slotLeft"></div>
+        <div class="heroine-slot slot-center empty" id="slotCenter"></div>
+        <div class="heroine-slot slot-right empty" id="slotRight"></div>
+      </div>
+
+      <!-- 吃瓜实时弹幕 -->
+      <div class="danmaku-layer" id="danmakuLayer"></div>
+
+      <!-- 第一人称感官 VFX 遮罩层 -->
+      <div class="vfx-bp-vignette" id="vfxBpVignette"></div>
+      <div class="vfx-slash hidden" id="vfxSlash"></div>
+      <div class="vfx-glasses hidden" id="vfxGlasses"></div>
+      <div class="vfx-shutter hidden" id="vfxShutter"></div>
+
+      <!-- 巴菲特跌破 -18% 躺赢快讯横幅 -->
+      <div class="buffett-toast hidden" id="buffettToast">
+        🏆 【华尔街即时快讯】NVDA 盘前跌穿 -18% 防线！恭喜巴菲特喝着樱桃可乐躺赢升至全球富豪榜第七！
+      </div>
+    </main>
+
+    <!-- 底部半透明第一人称对话框与右侧抉择区 -->
+    <footer class="dialogue-wrapper">
+      <div class="choice-box hidden" id="choiceBox"></div>
+      <div class="dialogue-box" id="dialogueBox">
+        <div class="speaker-tag speaker-system" id="speakerTag">旁白</div>
+        <div class="dialogue-text" id="dialogueText">点击画面任意位置开始推进……</div>
+        <div class="cursor-indicator" id="cursorIcon">▼</div>
+      </div>
+    </footer>
+
+    <!-- ==========================================
+         第一人称标题封面与弹窗矩阵
+         ========================================== -->
+    <section class="title-screen" id="titleScreen">
+      <div class="title-bg" style="background-image: url('assets/cg_pov_cover.jpg');"></div>
+      <div class="title-scrim"></div>
+      <div class="title-content">
+        <div class="title-badges">
+          <span class="t-badge">FIRST-PERSON POV</span>
+          <span class="t-badge t-badge-rose">1 原生 + 3 插帧 = DLSS 4 修罗场</span>
+          <span class="t-badge t-badge-gold">16:9 宽屏互动剧</span>
+        </div>
+        <h1 class="title-main">什么，作为影卫达总裁的我居然被<span class="title-accent">感情修罗场</span>包围了？！</h1>
+        <p class="title-en">What?! As NVDA CEO, I'm Surrounded by My DLSS 4 Harem?!</p>
+        <p class="title-logline">
+          一觉醒来 CEO、总裁、董事三职被一撸到底，楼下散户摆满白菊花点起 888 根白蜡烛——<br>
+          眼前是持剪正宫、茶艺千金、二十年医疗 VP、开源 00 后黑客，外加拎喜礼上门吃席的红厂表姐！
+        </p>
+
+        <div class="title-actions">
+          <button type="button" class="btn-title btn-title-primary" id="btnStartGame">🎬 进入总裁第一视角</button>
+          <button type="button" class="btn-title hidden" id="btnContinue">📂 读取修罗场存档</button>
+          <button type="button" class="btn-title" id="btnTitleGallery">🏆 8 大结局画廊</button>
+          <a class="btn-title btn-title-link" href="troll-edition.html">🕹️ 切换第1部：《恋与皮衣 · 散户嘴替版》</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- 三大修罗场专属交互小玩法弹窗 -->
+    <div class="modal-backdrop hidden" id="minigameModal">
+      <div class="modal-content modal-minigame" id="minigameMount"></div>
+    </div>
+
+    <!-- 存档弹窗 (6槽位) -->
+    <div class="modal-backdrop hidden" id="saveModal">
+      <div class="modal-content modal-wide">
+        <div class="modal-header">
+          <div class="modal-title">💾 保存当前进度（6 个独立存档位）</div>
+          <button type="button" class="modal-close">✕</button>
+        </div>
+        <div class="slots-grid" id="saveSlots"></div>
+      </div>
+    </div>
+
+    <!-- 读档弹窗 -->
+    <div class="modal-backdrop hidden" id="loadModal">
+      <div class="modal-content modal-wide">
+        <div class="modal-header">
+          <div class="modal-title">📂 读取游戏存档</div>
+          <button type="button" class="modal-close">✕</button>
+        </div>
+        <div class="slots-grid" id="loadSlots"></div>
+      </div>
+    </div>
+
+    <!-- 历史回看弹窗 -->
+    <div class="modal-backdrop hidden" id="logModal">
+      <div class="modal-content modal-wide">
+        <div class="modal-header">
+          <div class="modal-title">📜 历史对话回看（最近 100 句）</div>
+          <button type="button" class="modal-close">✕</button>
+        </div>
+        <div class="log-list" id="logList"></div>
+      </div>
+    </div>
+
+    <!-- 五女修罗场雷达弹窗 -->
+    <div class="modal-backdrop hidden" id="radarModal">
+      <div class="modal-content modal-wide">
+        <div class="modal-header">
+          <div class="modal-title">🔥 五女修罗场动态好感与压力雷达</div>
+          <button type="button" class="modal-close">✕</button>
+        </div>
+        <div id="radarDetailMount"></div>
+      </div>
+    </div>
+
+    <!-- 结局画廊弹窗 -->
+    <div class="modal-backdrop hidden" id="galleryModal">
+      <div class="modal-content modal-wide">
+        <div class="modal-header">
+          <div class="modal-title">🏆 8 大宿命结局画廊（<span id="galleryCount">0 / 8</span>）</div>
+          <button type="button" class="modal-close">✕</button>
+        </div>
+        <div class="gallery-grid" id="galleryGrid"></div>
+      </div>
+    </div>
+
+    <!-- 结局结算证书 -->
+    <div class="modal-backdrop hidden" id="endingModal">
+      <div class="modal-content ending-card">
+        <div class="ending-stamp" id="endingStamp">结局达成</div>
+        <h2 class="ending-title" id="endingTitle">结局名称</h2>
+        <p class="ending-desc" id="endingDesc"></p>
+        <blockquote class="ending-quote" id="endingQuote"></blockquote>
+        <div class="ending-stats" id="endingStats"></div>
+        <div class="ending-btns">
+          <button type="button" class="btn-title" id="btnEndingLoad">📂 读档重选</button>
+          <button type="button" class="btn-title btn-title-primary" id="btnEndingRestart">🔄 再活一夜</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7 个独立章节脚本 + 核心引擎（经典顺序加载，彻底兼容本地双击 file:// 与 Cloudflare Pages） -->
+  <script defer src="pov-audio.js"></script>
+  <script defer src="pov-sprites.js"></script>
+  <script defer src="pov-minigames.js"></script>
+  <script defer src="scripts/ch0_prologue.js"></script>
+  <script defer src="scripts/ch1_lori_scissors.js"></script>
+  <script defer src="scripts/ch2_alice_bistro.js"></script>
+  <script defer src="scripts/ch3_kimberly_clinic.js"></script>
+  <script defer src="scripts/ch4_zero_blindbox.js"></script>
+  <script defer src="scripts/ch5_five_way_clash.js"></script>
+  <script defer src="scripts/ch6_endings.js"></script>
+  <script defer src="pov-engine.js"></script>
+</body>
+</html>

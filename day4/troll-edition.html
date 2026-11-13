@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>恋与皮衣：今夜无人加仓 (Love &amp; Leather Jacket)</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- 桌面端两侧暗黑红绿 K 线动态虚化背景 -->
+  <div class="desktop-bg-kline"></div>
+
+  <!-- 16:9 居中横屏宽屏剧场容器 -->
+  <div class="game-container" id="gameContainer">
+    <!-- 竖屏打开时的轻提示（仅窄竖屏显示） -->
+    <div class="portrait-rotate-hint" id="portraitHint">🔄 建议横屏或电脑宽屏打开，体验完整 16:9 剧场演出</div>
+
+    <!-- 顶部常驻 HUD 状态栏 -->
+    <header class="top-hud" id="topHud">
+      <!-- 三项核心指标数值行 -->
+      <div class="hud-row-metrics">
+        <!-- 1. 总部白蜡烛数 + 追思会热度 -->
+        <div class="hud-card" id="loveCard">
+          <div class="hud-label hud-love-header">
+            <span class="hud-love-left"><span>🕯️</span><span id="loveValue">18 根</span></span>
+            <span class="love-status-tag love-tag-low" id="loveStatusTag">🕯️ 零星白烛</span>
+          </div>
+          <div class="progress-bar-bg">
+            <div class="progress-bar-fill" id="loveBar" style="width: 18%;"></div>
+          </div>
+        </div>
+
+        <!-- 2. NVDA 股价 (美股绿涨红跌闪烁，初始-14.00%) -->
+        <div class="hud-card">
+          <div class="hud-label"><span>📉</span><span>NVDA 股价</span></div>
+          <div class="hud-val stock-red" id="stockDisplay">$129.00 (-14.00%)</div>
+        </div>
+
+        <!-- 3. 老黄血压值 (满100%直接救护车拉进鲍姐医疗部) -->
+        <div class="hud-card">
+          <div class="hud-label"><span>🔥</span><span>老黄血压</span></div>
+          <div class="hud-val"><span class="votes-badge" id="votesBadge"><strong id="votesDisplay">40% · 隐忍</strong></span></div>
+        </div>
+      </div>
+
+      <!-- 快捷操作按钮行 (自适应紧凑布局，<=390px 零溢出) -->
+      <div class="hud-row-actions">
+        <button class="hud-btn" id="btnSave" title="存档"><span class="hud-ico">💾</span> <span>存档</span></button>
+        <button class="hud-btn" id="btnLoad" title="读档"><span class="hud-ico">📂</span> <span>读档</span></button>
+        <button class="hud-btn" id="btnSkip" title="快进"><span class="hud-ico">⏩</span> <span>快进</span></button>
+        <button class="hud-btn" id="btnLog" title="历史对话"><span class="hud-ico">📜</span> <span>回看</span></button>
+        <button class="hud-btn" id="btnInventory" title="背包"><span class="hud-ico">🎒</span> <span>背包</span></button>
+        <button class="hud-btn btn-tabloid" id="btnTabloid" title="硅谷今夜大瓜号外"><span class="hud-ico">🍉</span> <span>吃瓜</span></button>
+        <button class="hud-btn btn-buy-dip" id="btnBuyDip" title="一键抄底"><span class="hud-ico">💸</span> <span>抄底</span></button>
+        <button class="hud-btn" id="btnGallery" title="结局图鉴"><span class="hud-ico">🏆</span> <span>图鉴</span></button>
+        <a class="hud-btn" href="index.html" title="切换第2部：总裁第一人称五女修罗场" style="text-decoration:none;color:#fb7185;border-color:rgba(244,63,94,0.45);"><span class="hud-ico">🎭</span> <span>第2部</span></a>
+        <button class="hud-btn hud-btn-mute" id="btnMute" title="静音切换">🔊</button>
+      </div>
+    </header>
+
+    <!-- 上半屏舞台区域 (Stage) -->
+    <main class="stage-area" id="stage">
+      <!-- 场景背景层 -->
+      <div class="stage-bg bg-rain_street" id="stageBg"></div>
+
+      <!-- 飘落粉色像素樱花粒子层 -->
+      <div class="sakura-container" id="sakuraContainer"></div>
+
+      <!-- 地标切换提示条 -->
+      <div class="location-tag" id="locationTag">📍 加州圣克拉拉总部大门外 · 鲜花与白蜡烛摊位旁</div>
+
+      <!-- 角色立绘层 -->
+      <div class="sprite-container" id="spriteContainer"></div>
+
+      <!-- 恶趣味实时吃瓜弹幕层 -->
+      <div class="danmaku-layer" id="danmakuLayer"></div>
+
+      <!-- 手机画中画通讯来电弹窗 -->
+      <div class="call-popup hidden" id="callPopup">
+        <div class="call-avatar" id="callAvatar"></div>
+        <div class="call-info">
+          <div class="call-name" id="callName">硅谷钢铁侠·老马</div>
+          <div class="call-sub" id="callSub">Incoming Call...</div>
+        </div>
+      </div>
+    </main>
+
+    <!-- 下半屏对话与分支交互层 -->
+    <footer class="dialogue-wrapper">
+      <!-- 分支选项抽屉 -->
+      <div class="choice-box hidden" id="choiceBox"></div>
+
+      <!-- 日式 Galgame 磨砂玻璃半透明对话框 -->
+      <div class="dialogue-box" id="dialogueBox">
+        <!-- 角色名牌 -->
+        <div class="speaker-tag speaker-narrator" id="speakerName">旁白</div>
+        <!-- 逐字打字文本 -->
+        <div class="dialogue-text" id="dialogueText">点击屏幕任意位置开始推进……</div>
+        <!-- 跳动小爱心指示光标 -->
+        <div class="cursor-heart beating" id="cursorHeart">💖</div>
+      </div>
+    </footer>
+
+    <!-- ==========================================
+         弹窗模态框群 (Modals)
+         ========================================== -->
+
+    <!-- 1. 标题开始界面 -->
+    <div class="title-screen" id="titleScreen">
+      <div class="title-hero-layout">
+        <div class="title-hero-left">
+          <div class="title-logo-badge">NVDA · DLSS 4 TROLL EDITION</div>
+          <h1 class="title-main">恋与皮衣 · <span class="title-main-accent">今夜无人加仓</span></h1>
+          <p class="title-sub">DLSS 4 四线修罗场 · 终极串子嘴替物语</p>
+
+          <div class="title-btn-group">
+            <button class="btn-title btn-title-primary" id="btnStartGame">🎮 开始洗地处刑</button>
+            <button class="btn-title hidden" id="btnContinue">📂 继续上次进度</button>
+            <button class="btn-title" id="btnTitleGallery">🏆 损人结局图鉴 (6大结局)</button>
+            <a class="btn-title" href="index.html" style="text-decoration:none;text-align:center;border-color:rgba(244,63,94,0.45);color:#fda4af;">🎭 切换第2部：《作为影卫达总裁的我被修罗场包围了》</a>
+          </div>
+        </div>
+
+        <div class="title-hero-right" aria-hidden="true">
+          <div class="title-hero-tickers">
+            <span class="hero-chip hero-chip-red">📉 盘前闪崩 -14.00%</span>
+            <span class="hero-chip hero-chip-gold">🕯️ 圣克拉拉白烛追思</span>
+            <span class="hero-chip hero-chip-pink">⚡ DLSS 4 物理补帧</span>
+          </div>
+          <img src="assets/jensen_broken.png" alt="皮衣主角" class="title-hero-sprite">
+        </div>
+      </div>
+
+      <div class="title-footer">
+        16:9 宽屏剧场 · 1原生+3插帧 · 纯静态免编译 · 高位站岗自救整活
+      </div>
+    </div>
+
+    <!-- 2. 存档面板 -->
+    <div class="modal-backdrop hidden" id="saveModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <div class="modal-title">💾 存储游戏进度 (3 槽位)</div>
+          <button class="modal-close">✕</button>
+        </div>
+        <div class="slots-container" id="saveSlots"></div>
+      </div>
+    </div>
+
+    <!-- 3. 读档面板 -->
+    <div class="modal-backdrop hidden" id="loadModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <div class="modal-title">📂 读取游戏存档</div>
+          <button class="modal-close">✕</button>
+        </div>
+        <div class="slots-container" id="loadSlots"></div>
+      </div>
+    </div>
+
+    <!-- 4. Backlog 历史对话回看 -->
+    <div class="modal-backdrop hidden" id="logModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <div class="modal-title">📜 历史对话回看 (Backlog)</div>
+          <button class="modal-close">✕</button>
+        </div>
+        <div class="log-container" id="logList"></div>
+      </div>
+    </div>
+
+    <!-- 5. 散户背包面板 -->
+    <div class="modal-backdrop hidden" id="inventoryModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <div class="modal-title">🎒 散户随身背包</div>
+          <button class="modal-close">✕</button>
+        </div>
+        <div class="inventory-grid" id="inventoryGrid"></div>
+      </div>
+    </div>
+
+    <!-- 6. 后厨回流焊 QTE 小游戏弹窗 -->
+    <div class="modal-backdrop hidden" id="qteModal">
+      <div class="modal-content qte-content">
+        <div class="modal-title" style="color: #f59e0b;">🔥 后厨回流焊 QTE · 拆掉 8G 显存！🔥</div>
+        <p style="font-size: 12.5px; color: #cbd5e1; line-height: 1.55;">
+          代工厂听信库克接班谣言给工程卡焊上了可耻的 <strong>8GB 黄金显存</strong>！在指针扫过绿色<strong>【BGA 满血甜点区 (88°C~96°C)】</strong>时出手拆掉 8G 颗粒，焊满 DLSS 4 真插帧神卡！
+        </p>
+        <div class="qte-meter-wrapper">
+          <div class="qte-sweet-spot" id="qteSweetSpot"></div>
+          <div class="qte-pointer" id="qtePointer"></div>
+        </div>
+        <button class="btn-qte" id="btnQteCatch">🧤 拆掉8G显存 · 焊出满血神卡！</button>
+      </div>
+    </div>
+
+    <!-- 7. 一键抄底整活驳回弹窗 -->
+    <div class="modal-backdrop hidden" id="buyDipModal">
+      <div class="modal-content reject-box">
+        <div class="reject-icon">⚠️</div>
+        <div class="reject-title">券商风控：满融抄底被当场驳回！</div>
+        <div class="reject-desc">
+          检测到您准备买显卡和结婚的血汗本金全套在山顶，卡内可用余额仅剩 <strong>14.50 元</strong>（折合 NVDA 约 <strong>0.015 股</strong>），连半份猪脚饭都买不起！<br><br>
+          💡 <strong>高性价比平替推荐：</strong>不如移步圣克拉拉总部大门口地摊，花 <strong>9.90 元包邮</strong>购入一套【追思白菊花 + 电子白蜡烛 + 第30件战损皮衣碎布条】灵堂应援大礼包（还剩 4 块 6 够去 Denny's 蹭无限冰水）！
+        </div>
+        <div class="dip-market-card">
+          <span>🕯️ 总部门口地摊爆款：九块九白菊花追思三件套</span>
+          <strong>¥9.90 包邮 · 门外已排 10,085 号</strong>
+        </div>
+        <button class="btn-title btn-title-primary" id="btnDipClose" style="width: 100%;">😭 含泪省下14块5（继续嘴硬洗地）</button>
+      </div>
+    </div>
+
+    <!-- 8. 结局图鉴面板 (6大结局) -->
+    <div class="modal-backdrop hidden" id="galleryModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <div class="modal-title">🏆 损人结局图鉴 (<span id="galleryCount">0 / 6</span>)</div>
+          <button class="modal-close">✕</button>
+        </div>
+        <div class="gallery-grid" id="galleryGrid"></div>
+      </div>
+    </div>
+
+    <!-- 9. 通关结算诊断书 -->
+    <div class="modal-backdrop hidden" id="endingModal">
+      <div class="modal-content ending-diagnosis">
+        <div class="ending-stamp-badge" id="endingStamp">逆天改命</div>
+        <div class="modal-title" id="endingTitle" style="color: #f43f5e; font-size: 18px;">🏆 结局达成</div>
+        <p id="endingDesc" style="font-size: 13px; line-height: 1.5; color: #e2e8f0;"></p>
+        
+        <div class="ending-quote-box" id="endingQuote"></div>
+
+        <div class="ending-stats-grid" id="endingStats"></div>
+
+        <div class="btn-group-ending">
+          <button class="btn-secondary" id="btnEndingLoad">📂 读档刷全结局</button>
+          <button class="btn-primary" id="btnEndingRestart">🔄 再开一局</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 10. 🍉《硅谷今夜大瓜号外》八卦小报弹窗 -->
+    <div class="modal-backdrop hidden" id="tabloidModal">
+      <div class="modal-content tabloid-paper">
+        <div class="tabloid-banner">
+          <span class="tabloid-issue" id="tabloidIssue">🍉 硅谷今夜大瓜号外 · 突发特刊</span>
+          <button class="modal-close tabloid-close-btn" title="关闭">✕</button>
+        </div>
+
+        <div class="tabloid-head-wrap">
+          <h2 class="tabloid-headline" id="tabloidHeadline">30年纯爱战神今夜塌房！私密检讨信手滑群发全员！</h2>
+          <p class="tabloid-subhead" id="tabloidSubhead">正宫怒剪 29 件定制黑皮衣挂海鲜市场 9块9 包邮 · 盘前闪崩 -15%</p>
+        </div>
+
+        <div class="tabloid-spread-grid">
+          <div class="tabloid-col-left">
+            <figure class="tabloid-cg-frame">
+              <img src="assets/cg_distracted.jpg" alt="硅谷酒吧狗仔抓拍" class="tabloid-cg-img" id="tabloidImage" onerror="this.style.display='none'">
+              <figcaption class="tabloid-caption" id="tabloidCaption">📸 狗仔实拍名画《DLSS 4 物理补帧》：台北酒吧贴贴与总部门口点蜡烛全网热传</figcaption>
+            </figure>
+
+            <div class="tabloid-letter-box">
+              <div class="tabloid-letter-meta">📢 官方一撸到底公告：CEO / 总裁 / 董事三职即刻解除 · 零遗言零致敬</div>
+              <div class="tabloid-letter-body" id="tabloidLetter"></div>
+            </div>
+          </div>
+
+          <div class="tabloid-col-right">
+            <!-- 四宫格暴击热搜板 -->
+            <div class="tabloid-quad-grid" id="tabloidQuadGrid"></div>
+
+            <div class="tabloid-comments-section">
+              <div class="tabloid-comments-title">🔥 全球散户与吃瓜网友神评</div>
+              <div class="tabloid-comments-list" id="tabloidComments"></div>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn-title btn-title-primary" id="btnTabloidClose" style="width: 100%;">🍉 瓜保熟！合上小报继续审讯</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 引入 JavaScript 模块 -->
+  <script src="audio.js"></script>
+  <script src="sprites.js"></script>
+  <script src="script-data.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
