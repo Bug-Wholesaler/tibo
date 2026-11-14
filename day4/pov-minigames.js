@@ -336,7 +336,7 @@ window.PovMinigames = (function () {
     hdr.appendChild(countBadge);
     wrap.appendChild(hdr);
     wrap.appendChild(
-      createEl('div', 'mg-sub', '将下方高阶公关词条拖入（或点击填入）左侧 4 个 PPT 版块，拼出一套能唬住董事局的硬核白皮书！千万别手滑塞进自爆实话！')
+      createEl('div', 'mg-sub', '点击选中 PPT 版块后再点词条即可填入（宽屏也支持拖拽），拼出能唬住董事局的白皮书，切勿手滑塞进自爆实话！')
     );
 
     const grid = createEl('div', 'mg-ppt-grid');
@@ -366,7 +366,7 @@ window.PovMinigames = (function () {
         card.innerHTML = `
           <div class="mg-slot-title">${slot.label}</div>
           <div class="mg-slot-hint">${slot.hint}</div>
-          <div class="mg-slot-val ${tok ? 'filled' : ''}">${tok ? tok.text + ' · ' + tok.desc : '（点击或拖拽词条到此版面）'}</div>
+          <div class="mg-slot-val ${tok ? 'filled' : ''}">${tok ? tok.text + ' · ' + tok.desc : '（先点此版块，再点选词条填入）'}</div>
         `;
         card.addEventListener('click', () => {
           activeSlotId = slot.id;

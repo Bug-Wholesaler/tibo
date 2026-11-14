@@ -1011,6 +1011,15 @@
         dom.btnTitleGallery.addEventListener('click', renderGallery);
       }
 
+      const portraitHint = $('portraitHint');
+      const btnCloseHint = $('btnCloseHint');
+      if (btnCloseHint && portraitHint) {
+        btnCloseHint.addEventListener('click', (e) => {
+          e.stopPropagation();
+          portraitHint.classList.add('hidden');
+        });
+      }
+
       if (dom.dialogueBox) dom.dialogueBox.addEventListener('click', advance);
       if (dom.stageArea) dom.stageArea.addEventListener('click', advance);
 

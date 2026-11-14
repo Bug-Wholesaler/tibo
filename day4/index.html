@@ -10,7 +10,10 @@
   <div class="desktop-bg-kline"></div>
 
   <div class="game-container" id="gameContainer">
-    <div class="portrait-rotate-hint">🔄 建议横屏或电脑宽屏打开，体验完整 16:9 第一人称修罗场剧场</div>
+    <div class="portrait-rotate-hint" id="portraitHint">
+      <span>📱 已适配竖屏单手畅玩 · 横置手机可切换宽屏剧场</span>
+      <button type="button" class="hint-close" id="btnCloseHint" aria-label="关闭提示">✕</button>
+    </div>
 
     <!-- 顶部第一人称状态栏 HUD -->
     <header class="top-hud" id="topHud">
@@ -38,13 +41,13 @@
       </div>
 
       <div class="hud-actions">
-        <button type="button" class="hud-btn" id="btnSave" title="存档 (6槽位)">💾 存档</button>
-        <button type="button" class="hud-btn" id="btnLoad" title="读档">📂 读档</button>
-        <button type="button" class="hud-btn" id="btnSkip" title="已读快进">⏩ 快进</button>
-        <button type="button" class="hud-btn" id="btnAuto" title="自动播放">▶️ 自动</button>
-        <button type="button" class="hud-btn" id="btnLog" title="历史回看 (100句)">📜 回看</button>
-        <button type="button" class="hud-btn" id="btnGallery" title="8大结局画廊">🏆 画廊</button>
-        <a class="hud-btn hud-btn-switch" href="troll-edition.html" title="切换到第1部：散户嘴替版《恋与皮衣》">🕹️ 第1部</a>
+        <button type="button" class="hud-btn" id="btnSave" title="存档 (6槽位)"><span class="hud-b-ico">💾</span><span class="hud-b-txt">存档</span></button>
+        <button type="button" class="hud-btn" id="btnLoad" title="读档"><span class="hud-b-ico">📂</span><span class="hud-b-txt">读档</span></button>
+        <button type="button" class="hud-btn" id="btnSkip" title="已读快进"><span class="hud-b-ico">⏩</span><span class="hud-b-txt">快进</span></button>
+        <button type="button" class="hud-btn" id="btnAuto" title="自动播放"><span class="hud-b-ico">▶️</span><span class="hud-b-txt">自动</span></button>
+        <button type="button" class="hud-btn" id="btnLog" title="历史回看 (100句)"><span class="hud-b-ico">📜</span><span class="hud-b-txt">回看</span></button>
+        <button type="button" class="hud-btn" id="btnGallery" title="8大结局画廊"><span class="hud-b-ico">🏆</span><span class="hud-b-txt">画廊</span></button>
+        <a class="hud-btn hud-btn-switch" href="troll-edition.html" title="切换到第1部：散户嘴替版《恋与皮衣》"><span class="hud-b-ico">🕹️</span><span class="hud-b-txt">第1部</span></a>
         <button type="button" class="hud-btn hud-btn-mute" id="btnMute" title="音效开关">🔊</button>
       </div>
     </header>
